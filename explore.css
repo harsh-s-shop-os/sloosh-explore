@@ -665,17 +665,17 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 .sf-nav li { font-size: 14px; font-weight: 500; line-height: 19.6px; }
 .sf-nav a { display: inline-flex; align-items: center; padding: 5px 0 7px; color: hsl(var(--n950) / 0.7); transition: color 120ms ease; }
 .sf-nav a:hover { color: hsl(var(--n950)); }
-.sf-dark { position: relative; overflow: hidden; background: hsl(var(--n950)); color: hsl(var(--n50)); }
+.sf-dark { position: relative; overflow: hidden; background: hsl(var(--y500)); color: hsl(var(--n950)); } /* the ASCII close on yellow: black glyphs */
 .sf-big { display: grid; justify-items: center; padding: 44px 0 20px; }
 .sf-big .ft-stage { width: min(620px, 100%); }
-.sf-legal { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px 22px; padding: 18px 0 22px; border-top: 1px solid hsl(var(--n800)); color: hsl(var(--n400)); font-size: 14px; font-weight: 500; line-height: 19.6px; }
+.sf-legal { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px 22px; padding: 18px 0 22px; border-top: 1px solid hsl(var(--n950) / 0.15); color: hsl(var(--n950) / 0.7); font-size: 14px; font-weight: 500; line-height: 19.6px; }
 .sf-soc { display: flex; gap: 4px; margin-left: -8px; }
-.sf-soc a { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: hsl(var(--n400)); transition: color 120ms ease, background-color 120ms ease; }
-.sf-soc a:hover { color: hsl(var(--n50)); background: hsl(var(--n900)); }
+.sf-soc a { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: hsl(var(--n950) / 0.7); transition: color 120ms ease, background-color 120ms ease; }
+.sf-soc a:hover { color: hsl(var(--n950)); background: hsl(var(--n950) / 0.08); }
 .sf-soc svg { width: 20px; height: 20px; }
 .sf-legal p { text-align: center; }
 .sf-law { display: flex; justify-content: flex-end; gap: 32px; }
-.sf-law a { color: hsl(var(--n400)); transition: color 120ms ease; } .sf-law a:hover { color: hsl(var(--n50)); }
+.sf-law a { color: hsl(var(--n950) / 0.7); transition: color 120ms ease; } .sf-law a:hover { color: hsl(var(--n950)); }
 @media (max-width: 1100px) { .sf-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 40px; } }
 @media (max-width: 760px) {
   .sf-wrap { padding-inline: 16px; }
