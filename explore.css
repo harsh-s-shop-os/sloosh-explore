@@ -218,6 +218,12 @@
 .cast .key { margin-top: auto; }
 .ser-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .ser-grid[hidden] { display: none; }
+/* beside the Cast card, the two rows of episodes grow to the card's height (they never go below 16:9) */
+@media (min-width: 761px) {
+  .ser-panels { display: flex; flex-direction: column; }
+  .ser-grid { flex: 1 1 auto; grid-auto-rows: 1fr; }
+  .ser-grid > .ep, .ser-grid > .ep-more { align-self: stretch; }
+}
 .ep { aspect-ratio: 16 / 9; }
 .ep .ep-n { position: absolute; top: 12px; left: 12px; z-index: 2; }
 .ep-more { aspect-ratio: 16 / 9; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--foreground)); transition: background-color 150ms ease; }
@@ -918,12 +924,12 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 
 /* ---------- 8. Made on Sloosh: the templates masonry again, ending in the mini prompt ----------
    .flow wraps every section but the footer, so the sticky prompt (its last child) rides the bottom
-   of the screen and stops right above the footer, resting on the faded end of the gallery. */
+   of the screen and stops right above the footer, on clear black below the faded gallery, never over the images. */
 .flow { position: relative; }
 #gallery { padding-bottom: 0; }
 #gallery .mas-wrap[hidden] { display: none; }
 .mas .mc > video { pointer-events: none; }
-.pdock { position: sticky; bottom: 24px; z-index: 40; display: flex; justify-content: center; margin: -96px auto 120px; padding: 0 16px; pointer-events: none;
+.pdock { position: sticky; bottom: 24px; z-index: 40; display: flex; justify-content: center; margin: 48px auto 120px; padding: 0 16px; pointer-events: none;
   transition: opacity 240ms ease, transform 420ms var(--ease-arrive); }
 .pdock.off { opacity: 0; transform: translateY(24px); visibility: hidden; transition: opacity 200ms ease, transform 300ms ease, visibility 0s 300ms; }
 .pd-box { pointer-events: auto; display: flex; align-items: center; gap: 4px; width: min(400px, 100%); height: 52px; padding: 0 8px; border-radius: 999px;
@@ -940,7 +946,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 @media (max-width: 1100px) { .shell-top .pdock { bottom: calc(64px + 16px + env(safe-area-inset-bottom)); } }
 @media (max-width: 760px) {
   .shell-side .pdock { bottom: calc(64px + 16px + env(safe-area-inset-bottom)); }
-  .pdock { margin: -88px auto 88px; }
+  .pdock { margin: 32px auto 88px; }
 }
 @media (prefers-reduced-motion: reduce) { .pdock, .pd-box { transition: none; } .pdock.nudge .pd-box { animation: none; } }
 
@@ -962,7 +968,6 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 .agw-ls { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .agw-l { position: relative; outline: none; }
 .agw-c { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: hsl(var(--n950)); color: hsl(var(--n0)); transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.agw-l.claude .agw-c { color: #D97757; }
 .agw-c .mk { display: block; width: 20px; height: 20px; background: currentColor; -webkit-mask: var(--mk) center / contain no-repeat; mask: var(--mk) center / contain no-repeat; }
 .agw-c img { width: 20px; height: 20px; object-fit: contain; }
 .agw-l::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px); z-index: 2; padding: 6px 8px; border-radius: 6px; background: hsl(var(--n950)); color: hsl(var(--n50)); font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; pointer-events: none;
@@ -989,3 +994,18 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .cast .key { margin-top: 4px; }
   .cast-reel { margin: 8px -24px -14px; }
 }
+
+/* ---------- Agents banner v3: one head block (MCP tag, headline, logos), then the action block ---------- */
+.bn-ag .ag-copy2 { gap: 40px; }
+.ag-head { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.ag-head .agw-ls { margin-top: 8px; }
+.ag-act { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 100%; max-width: 480px; }
+.ag-act .ag-note { margin: 0 0 -8px 18px; }
+.ag-act .ctas { margin-top: 0; }
+.bn-ag .agb-addr.ag-addr { max-width: none; height: 56px; margin-top: 0; padding: 0 8px 0 20px; border-radius: 16px; }
+.bn-ag .ag-addr code { font-size: 16px; line-height: 24px; }
+.bn-ag .ag-addr .ag-copy { width: 40px; height: 40px; border-radius: 12px; }
+.key.k56 { height: 56px; padding-inline: 24px; border-radius: 16px; font-size: 16px; font-weight: 600; gap: 8px; --d: 4px; }
+.key.k56 .ic, .key.k56 .ic16 { width: 20px; height: 20px; }
+.key.k56.trail { padding-right: 20px; }
+@media (max-width: 760px) { .bn-ag .ag-copy2 { gap: 32px; } .bn-ag .agb-addr.ag-addr { height: 48px; } .bn-ag .ag-addr code { font-size: 14px; } .key.k56 { height: 48px; padding-inline: 20px; border-radius: 12px; } }
