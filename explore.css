@@ -1201,3 +1201,36 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellipse)[stroke-width] { stroke-width: var(--icon-stroke); }
 .st-btn .ic16, .ag-copy .ic16 { width: 20px; height: 20px; }
 .key .ic16 { width: 16px; height: 16px; flex: none; }
+
+/* ---------- first fold v5: the carousel runs full width, straight under the nav, and fills the screen.
+   The copy lines up with the page's content column; the slider lines run edge to edge (page gutter), no labels. ---------- */
+.stories.wrap { max-width: none; padding: 0; --st-top: 61px; --st-bot: 0px;
+  --cl: max(var(--g), calc((100% - 1504px) / 2 + var(--g))); }
+.shell-side .stories.wrap { --st-top: 0px; }
+.stories .st-stage { height: clamp(560px, calc(100svh - var(--st-top) - var(--st-bot)), 1000px); border-radius: 0; }
+.stories .st-scrim { background:
+  linear-gradient(0deg, hsl(var(--media-scrim) / 0.88) 0%, hsl(var(--media-scrim) / 0.45) 32%, hsl(var(--media-scrim) / 0) 58%),
+  linear-gradient(90deg, hsl(var(--media-scrim) / 0.55) 0%, hsl(var(--media-scrim) / 0) 55%),
+  hsl(var(--media-scrim) / 0.18); }
+.stories .st-copy { left: var(--cl); bottom: 112px; width: min(640px, 56%); }
+.stories .st.agent .st-copy { width: min(560px, 44%); }
+.stories .st-proof.st-mm { top: 32px; right: var(--cl); bottom: 140px; }
+.stories .st-ui { left: var(--g); right: var(--g); bottom: 32px; display: block; }
+.stories .st-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stories .st-tab { width: auto; height: 20px; }
+.stories .st-bar i { top: 8px; height: 3px; border-radius: 3px; background: hsl(var(--n0) / 0.25); }
+.stories .st-bar b { background: hsl(var(--brand-accent)); }
+.stories .st-arr { display: none; }
+/* pause stays (autoplay needs one), on the right of the copy column, level with the CTA */
+.stories .st-pause { position: absolute; right: calc(var(--cl) - var(--g)); bottom: 85px; }
+@media (max-width: 1100px) { .shell-top .stories.wrap { --st-bot: 64px; } }
+@media (max-width: 760px) {
+  .shell-side .stories.wrap { --st-top: 60px; --st-bot: 64px; }
+  .stories .st-stage { height: clamp(520px, calc(100svh - var(--st-top) - var(--st-bot)), 760px); }
+  .stories .st-copy { left: var(--g); right: var(--g); width: auto; bottom: 72px; }
+  .stories .st.agent .st-copy { width: auto; }
+  .stories .st-proof.st-mm { top: 16px; left: 8px; right: 8px; bottom: auto; }
+  .stories .st-ui { bottom: 24px; }
+  .stories .st-bar { gap: 6px; }
+  .stories .st-pause { display: none; }
+}
