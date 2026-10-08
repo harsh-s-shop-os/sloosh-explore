@@ -1100,3 +1100,8 @@ button.pd-chip:active, .pd-ic:active { transform: scale(0.97); }
 .bn-copy { justify-content: flex-start; }
 .bn-lab .bn-copy .ctas { margin-top: auto; }
 .bn-ag .ag-copy2 { justify-content: space-between; }
+
+/* ---------- cast card: reel stays on top; the copy (tag, headline, line, CTA) sits together on the bottom.
+   The free space goes above the tag instead of above the CTA, wherever the card stretches to the series height. ---------- */
+@media (min-width: 1361px) { .cast .key { margin-top: 4px; } .cast-top { margin-top: auto; } }
+@media (min-width: 1281px) and (max-width: 1360px) { .shell-top .cast .key { margin-top: 4px; } .shell-top .cast-top { margin-top: auto; } }
