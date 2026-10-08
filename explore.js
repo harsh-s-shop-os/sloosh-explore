@@ -191,12 +191,12 @@
     var pdStage = pd.querySelector(".pd-stage");
     var PD = {}; try { PD = JSON.parse(doc.getElementById("pd-data").textContent); } catch (e) {}
     var hoverable = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    var isOpen = false, overT = 0, hovering = false;
+    var isOpen = false, overT = 0, hovering = false, openedAt = 0;
 
     var setOpen = function (on, focusTa) {
       if (on && pd.classList.contains("off")) return;
       if (on === isOpen) { if (on && focusTa) pdTa.focus(); return; }
-      isOpen = on;
+      isOpen = on; if (on) openedAt = Date.now();
       pd.classList.toggle("open", on);
       pdBig.inert = !on;
       pdIn.setAttribute("aria-expanded", on ? "true" : "false");
@@ -205,7 +205,7 @@
         if (focusTa) { pdTa.focus(); var L = pdTa.value.length; try { pdTa.setSelectionRange(L, L); } catch (e) {} }
         snd("tap");
       } else {
-        pdIn.value = pdTa.value;
+        pdIn.value = pdTa.value; statusBtn.hidden = true; hideTip();
         if (pd.contains(doc.activeElement)) doc.activeElement.blur();
       }
     };
@@ -237,54 +237,150 @@
       }, { threshold: [0, 0.4, 0.6] }).observe(hero);
     } else pd.classList.remove("off");
 
-    /* Image / Video: each keeps its own model, ratio, quality and count / duration */
-    var state = {}, mode = "image";
-    Object.keys(PD).forEach(function (k) { var d = PD[k]; state[k] = { m: 0, ar: 0, q: d.q0 || 0, n: d.n0 || d.n[0] }; });
-    var logo = pd.querySelector("[data-pd-logo]"), V = function (k) { return pd.querySelector('[data-pd-v="' + k + '"]'); };
-    var arBox = pd.querySelector(".pd-ar"), dec = pd.querySelector('[data-pd="dec"]'), inc = pd.querySelector('[data-pd="inc"]');
-    var render = function () {
-      var d = PD[mode], st = state[mode]; if (!d) return;
-      var mo = d.models[st.m];
-      V("model").textContent = mo.name; logo.src = mo.logo; logo.classList.toggle("mono", !!mo.mono);
-      var ar = d.ar[st.ar]; V("ar").textContent = ar;
-      var wh = ar.split(":").map(Number), big = Math.max(wh[0], wh[1]);
-      arBox.style.width = Math.round(8 * wh[0] / big) + "px"; arBox.style.height = Math.round(8 * wh[1] / big) + "px";
-      pd.querySelector('[data-pd="ar"]').setAttribute("aria-label", "Aspect ratio: " + ar);
-      V("q").textContent = d.q[st.q]; pd.querySelector('[data-pd="q"]').setAttribute("aria-label", (mode === "video" ? "Resolution: " : "Quality: ") + d.q[st.q]);
-      V("n").textContent = d.unit === "s" ? st.n + "s" : st.n + " " + d.unit + (st.n > 1 ? "s" : "");
-      dec.setAttribute("aria-label", d.unit === "s" ? "Shorter" : "Fewer"); inc.setAttribute("aria-label", d.unit === "s" ? "Longer" : "More");
-      dec.setAttribute("aria-disabled", st.n <= d.n[0] ? "true" : "false"); inc.setAttribute("aria-disabled", st.n >= d.n[1] ? "true" : "false");
-      pd.querySelectorAll("[data-pd-mode]").forEach(function (b) { var on = b.getAttribute("data-pd-mode") === mode; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
+    /* Image / Video: each mode keeps its own model and settings. The chips come from the model's fields, in the
+       order of shopos-ui's config-chips.tsx: Add, Model, Enhance, the fields (a duration is a +/- stepper), Sound and
+       Camera (video), then the count ("1 image" on images, "1/4" on video). Hugeicons, as Sloosh draws them. */
+    var SW = function (p) { return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' + p + '</svg>'; };
+    var LN = ' stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"';
+    var IC = {
+      plus: '<path d="M12.001 5.00003V19.002"' + LN + '/><path d="M19.002 12.002L4.99998 12.002"' + LN + '/>',
+      minus: '<path d="M20 12L4 12"' + LN + '/>',
+      wand: '<path d="M13.9258 12.7775L11.7775 10.6292C11.4847 10.3364 11.3383 10.19 11.1803 10.1117C10.8798 9.96277 10.527 9.96277 10.2264 10.1117C10.0685 10.19 9.92207 10.3364 9.62923 10.6292C9.33638 10.9221 9.18996 11.0685 9.11169 11.2264C8.96277 11.527 8.96277 11.8798 9.11169 12.1803C9.18996 12.3383 9.33638 12.4847 9.62923 12.7775L11.7775 14.9258M13.9258 12.7775L20.3708 19.2225C20.6636 19.5153 20.81 19.6617 20.8883 19.8197C21.0372 20.1202 21.0372 20.473 20.8883 20.7736C20.81 20.9315 20.6636 21.0779 20.3708 21.3708C20.0779 21.6636 19.9315 21.81 19.7736 21.8883C19.473 22.0372 19.1202 22.0372 18.8197 21.8883C18.6617 21.81 18.5153 21.6636 18.2225 21.3708L11.7775 14.9258M13.9258 12.7775L11.7775 14.9258"' + LN + '/><path d="M17 2L17.2948 2.7966C17.6813 3.84117 17.8746 4.36345 18.2556 4.74445C18.6366 5.12545 19.1588 5.31871 20.2034 5.70523L21 6L20.2034 6.29477C19.1588 6.68129 18.6366 6.87456 18.2556 7.25555C17.8746 7.63655 17.6813 8.15883 17.2948 9.2034L17 10L16.7052 9.2034C16.3187 8.15884 16.1254 7.63655 15.7444 7.25555C15.3634 6.87455 14.8412 6.68129 13.7966 6.29477L13 6L13.7966 5.70523C14.8412 5.31871 15.3634 5.12545 15.7444 4.74445C16.1254 4.36345 16.3187 3.84117 16.7052 2.7966L17 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"/><path d="M6 4L6.22108 4.59745C6.51097 5.38087 6.65592 5.77259 6.94167 6.05834C7.22741 6.34408 7.61913 6.48903 8.40255 6.77892L9 7L8.40255 7.22108C7.61913 7.51097 7.22741 7.65592 6.94166 7.94167C6.65592 8.22741 6.51097 8.61913 6.22108 9.40255L6 10L5.77892 9.40255C5.48903 8.61913 5.34408 8.22741 5.05833 7.94167C4.77259 7.65592 4.38087 7.51097 3.59745 7.22108L3 7L3.59745 6.77892C4.38087 6.48903 4.77259 6.34408 5.05833 6.05833C5.34408 5.77259 5.48903 5.38087 5.77892 4.59745L6 4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"/>',
+      gem: '<path d="M5.92089 5.92089C8.15836 3.68342 9.2771 2.56468 10.5857 2.19562C11.5105 1.93479 12.4895 1.93479 13.4143 2.19562C14.7229 2.56468 15.8416 3.68342 18.0791 5.92089C20.3166 8.15836 21.4353 9.2771 21.8044 10.5857C22.0652 11.5105 22.0652 12.4895 21.8044 13.4143C21.4353 14.7229 20.3166 15.8416 18.0791 18.0791C15.8416 20.3166 14.7229 21.4353 13.4143 21.8044C12.4895 22.0652 11.5105 22.0652 10.5857 21.8044C9.2771 21.4353 8.15836 20.3166 5.92089 18.0791C3.68342 15.8416 2.56468 14.7229 2.19562 13.4143C1.93479 12.4895 1.93479 11.5105 2.19562 10.5857C2.56468 9.2771 3.68342 8.15836 5.92089 5.92089Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"/>',
+      rect: '<path d="M1.99219 12C1.99219 9.19974 1.99219 7.79961 2.53715 6.73005C3.01652 5.78924 3.78142 5.02433 4.72223 4.54497C5.79179 4 7.19192 4 9.99219 4H13.9922C16.7924 4 18.1926 4 19.2621 4.54497C20.203 5.02433 20.9679 5.78924 21.4472 6.73005C21.9922 7.79961 21.9922 9.19974 21.9922 12C21.9922 14.8003 21.9922 16.2004 21.4472 17.27C20.9679 18.2108 20.203 18.9757 19.2621 19.455C18.1926 20 16.7925 20 13.9922 20H9.99219C7.19192 20 5.79179 20 4.72223 19.455C3.78142 18.9757 3.01652 18.2108 2.53715 17.27C1.99219 16.2004 1.99219 14.8003 1.99219 12Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"/>',
+      volOn: '<path d="M14 14.8135V9.18646C14 6.04126 14 4.46866 13.0747 4.0773C12.1494 3.68593 11.0603 4.79793 8.88232 7.02192C7.75439 8.17365 7.11085 8.42869 5.50604 8.42869C4.10257 8.42869 3.40084 8.42869 2.89675 8.77262C1.85035 9.48655 2.00852 10.882 2.00852 12C2.00852 13.118 1.85035 14.5134 2.89675 15.2274C3.40084 15.5713 4.10257 15.5713 5.50604 15.5713C7.11085 15.5713 7.75439 15.8264 8.88232 16.9781C11.0603 19.2021 12.1494 20.3141 13.0747 19.9227C14 19.5313 14 17.9587 14 14.8135Z"' + LN + '/><path d="M17 9C17.6254 9.81968 18 10.8634 18 12C18 13.1366 17.6254 14.1803 17 15"' + LN + '/><path d="M20 7C21.2508 8.36613 22 10.1057 22 12C22 13.8943 21.2508 15.6339 20 17"' + LN + '/>',
+      volOff: '<path d="M22 22L2 2"' + LN + '/><path d="M17 10C17.6296 10.7667 18 11.7054 18 12.7195C18 13.1635 17.929 13.593 17.7963 14"' + LN + '/><path d="M20 8C21.2508 9.22951 22 10.7952 22 12.5C22 13.9164 21.4829 15.2367 20.5906 16.348"' + LN + '/><path d="M14 14C14 17.1452 14 19.5313 13.074 19.9227C12.1481 20.3141 11.0583 19.2021 8.8787 16.9781C7.7499 15.8264 7.106 15.5713 5.5 15.5713C4.3879 15.5713 3.02749 15.7187 2.33706 14.6643C2 14.1496 2 13.4331 2 12C2 10.5669 2 9.85038 2.33706 9.33566C3.02749 8.28131 4.3879 8.42869 5.5 8.42869C6.60725 8.42869 7.3569 8.43869 7.96 7.96M14 9.5C14 6.3548 14.026 4.46866 13.1 4.0773C12.3292 3.75147 11.5323 4.46765 10 6"' + LN + '/>',
+      cam: '<path d="M12.6974 3.5H11.303C10.5884 3.5 10.2311 3.5 9.91067 3.612C9.71499 3.68039 9.53113 3.77879 9.36568 3.90367C9.09474 4.10816 8.89655 4.40544 8.50018 5L8.50017 5.00001C8.29717 5.30453 7.99794 5.75337 7.87867 5.87871C7.58314 6.18927 7.19563 6.39666 6.77329 6.47029C6.60284 6.5 6.41985 6.5 6.05387 6.5C5.07379 6.5 4.58376 6.5 4.18307 6.61342C3.18074 6.89716 2.39734 7.68055 2.1136 8.68289C2.00018 9.08357 2.00018 9.57361 2.00018 10.5537V14.5C2.00018 17.3284 2.00018 18.7426 2.87886 19.6213C3.75754 20.5 5.17176 20.5 8.00018 20.5H16.0002C18.8286 20.5 20.2428 20.5 21.1215 19.6213C22.0002 18.7426 22.0002 17.3284 22.0002 14.5V10.5537C22.0002 9.57361 22.0002 9.08357 21.8868 8.68289C21.603 7.68055 20.8196 6.89716 19.8173 6.61342C19.4166 6.5 18.9266 6.5 17.9465 6.5C17.5805 6.5 17.3975 6.5 17.2271 6.47029C16.8047 6.39666 16.4172 6.18927 16.1217 5.87871C16.0024 5.75336 15.7032 5.30451 15.5002 5C15.1038 4.40544 14.9056 4.10816 14.6347 3.90367C14.4692 3.77879 14.2854 3.68039 14.0897 3.612C13.7693 3.5 13.412 3.5 12.6974 3.5Z"' + LN + '/><path d="M16.0002 13C16.0002 15.2091 14.2093 17 12.0002 17C9.79104 17 8.00018 15.2091 8.00018 13C8.00018 10.7909 9.79104 9 12.0002 9C14.2093 9 16.0002 10.7909 16.0002 13Z"' + LN + '/><path d="M19.1252 9.5H19.0002M19.2502 9.5C19.2502 9.63807 19.1383 9.75 19.0002 9.75C18.8621 9.75 18.7502 9.63807 18.7502 9.5C18.7502 9.36193 18.8621 9.25 19.0002 9.25C19.1383 9.25 19.2502 9.36193 19.2502 9.5Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/>'
     };
-    pd.querySelectorAll("[data-pd-mode]").forEach(function (b) {
-      b.addEventListener("click", function () { mode = b.getAttribute("data-pd-mode"); render(); });
+    var ENHANCE_HINT = "Rewrites your prompt for the selected model", MAX_GENERATIONS = 4;
+    var chipsEl = pd.querySelector("[data-pd-chips]"), rail = pd.querySelector(".pd-rail"), tipEl = pd.querySelector("#pd-tip");
+    var statusBtn = pd.querySelector("[data-pd-status]"), genBtn = pd.querySelector(".pd-gen");
+    var esc = function (t) { return String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); };
+    var secondsOf = function (f) { var a = []; for (var s = f.seconds[0]; s <= f.seconds[1]; s += f.seconds[2]) a.push(s); return a; };
+    var mode = "image", st = {};
+    Object.keys(PD).forEach(function (k) {
+      st[k] = { m: 0, enhance: true, sound: true, cam: false, n: 1,
+        vals: PD[k].map(function (mo) { var o = {}; mo.fields.forEach(function (f) { o[f.key] = f.default; }); return o; }) };
+    });
+    var ratioTile = function (v) {
+      var r = /(\d+)\s*:\s*(\d+)/.exec(v); if (!r) return SW(IC.rect);
+      var w = +r[1], h = +r[2], k = 8 / Math.max(w, h);
+      return '<span class="pd-ar" style="width:' + Math.max(2, Math.round(w * k)) + 'px;height:' + Math.max(2, Math.round(h * k)) + 'px"></span>';
+    };
+    var switchChip = function (key, label, hint, icon, on, locked) {
+      return '<span class="pd-chip pd-sw-chip" data-tip="' + esc(label) + '"' + (hint ? ' data-hint="' + esc(hint) + '"' : "") + '><span class="pd-tile">' + SW(icon) + '</span>' +
+        '<button type="button" class="pd-sw" role="switch" data-k="' + key + '" aria-checked="' + on + '" aria-label="' + esc(label) + '"' + (locked ? ' aria-disabled="true"' : "") + ' data-snd="tick"><span></span></button></span>';
+    };
+    var stepper = function (key, name, display, canDec, canInc, decLabel, incLabel) {
+      return '<div class="pd-step" role="group" aria-label="' + esc(name + ", " + display) + '" data-tip="' + esc(name) + '">' +
+        '<button type="button" data-k="' + key + '-" aria-label="' + decLabel + '" aria-disabled="' + !canDec + '" data-snd="tick">' + SW(IC.minus) + '</button>' +
+        '<span class="pd-n">' + esc(display) + '</span>' +
+        '<button type="button" data-k="' + key + '+" aria-label="' + incLabel + '" aria-disabled="' + !canInc + '" data-snd="tick">' + SW(IC.plus) + '</button></div>';
+    };
+    var measureRow = function () {
+      var end = chipsEl.scrollWidth - chipsEl.clientWidth - chipsEl.scrollLeft > 1, start = chipsEl.scrollLeft > 1;
+      chipsEl.classList.toggle("clip-end", end); chipsEl.classList.toggle("clip-start", start);
+    };
+    var render = function () {
+      var list = PD[mode]; if (!list) return;
+      var s = st[mode], mo = list[s.m], vals = s.vals[s.m], video = mode === "video";
+      var focusK = doc.activeElement && chipsEl.contains(doc.activeElement) ? doc.activeElement.getAttribute("data-k") : null;
+      var h = '<button type="button" class="pd-plus" data-k="add" aria-label="Add media" data-tip="Add media" data-snd="tap">' + SW(IC.plus) + '</button>';
+      h += '<button type="button" class="pd-chip" data-k="model" aria-label="Model: ' + esc(mo.name) + '" data-tip="Model" data-snd="tap"><span class="pd-tile"><img alt="" src="' + esc(mo.logo) + '"' + (mo.mono ? ' class="mono"' : "") + '></span><span>' + esc(mo.name) + '</span></button>';
+      h += switchChip("enhance", "Enhance prompt", ENHANCE_HINT, IC.wand, s.enhance, false);
+      mo.fields.forEach(function (f) {
+        var v = vals[f.key];
+        if (f.seconds) {
+          var L = secondsOf(f), i = L.indexOf(v);
+          h += stepper("d", "Length", v + "s", i > 0, i < L.length - 1, "Shorter duration", "Longer duration");
+          return;
+        }
+        var aspect = /aspect|ratio/i.test(f.key + " " + f.label);
+        h += '<button type="button" class="pd-chip" data-k="f:' + f.key + '" aria-label="' + esc(f.label + ": " + v) + '" data-tip="' + (aspect ? "Aspect ratio" : "Quality") + '" data-snd="tap">' +
+          '<span class="pd-tile">' + (aspect ? ratioTile(v) : SW(IC.gem)) + '</span><span>' + esc(v) + '</span></button>';
+      });
+      if (video && mo.sound) {
+        var on = mo.sound === "always" ? true : mo.sound === "never" ? false : s.sound;
+        h += switchChip("sound", "Sound", mo.sound === "always" ? "This model always makes sound" : mo.sound === "never" ? "This model makes silent videos" : "", on ? IC.volOn : IC.volOff, on, mo.sound !== "optional");
+      }
+      if (video) h += '<button type="button" class="pd-cam" data-k="cam" aria-pressed="' + s.cam + '" aria-label="Camera: Auto" data-tip="Camera: Auto" data-snd="tap">' + SW(IC.cam) + '</button>';
+      h += stepper("n", "Number of " + mode + "s", video ? s.n + "/" + MAX_GENERATIONS : s.n + " image" + (s.n === 1 ? "" : "s"), s.n > 1, s.n < MAX_GENERATIONS, "Fewer generations", "More generations");
+      chipsEl.innerHTML = h;
+      if (focusK) { var back = chipsEl.querySelector('[data-k="' + focusK + '"]'); if (back) back.focus(); }
+      rail.setAttribute("data-mode", mode);
+      rail.querySelectorAll("[data-pd-mode]").forEach(function (b) { var sel = b.getAttribute("data-pd-mode") === mode; b.setAttribute("aria-selected", sel ? "true" : "false"); b.tabIndex = sel ? 0 : -1; });
+      requestAnimationFrame(measureRow);
+    };
+    chipsEl.addEventListener("scroll", measureRow, { passive: true });
+    window.addEventListener("resize", measureRow);
+    chipsEl.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-k]"); if (!b || b.getAttribute("aria-disabled") === "true") return;
+      var k = b.getAttribute("data-k"), s = st[mode], list = PD[mode], mo = list[s.m], vals = s.vals[s.m];
+      if (k === "add") return; /* the uploader lives in Studio; nothing to attach on the homepage */
+      if (k === "model") s.m = (s.m + 1) % list.length;
+      else if (k === "enhance") s.enhance = !s.enhance;
+      else if (k === "sound") s.sound = !s.sound;
+      else if (k === "cam") s.cam = !s.cam;
+      else if (k === "n-" || k === "n+") s.n = Math.max(1, Math.min(MAX_GENERATIONS, s.n + (k === "n+" ? 1 : -1)));
+      else if (k === "d-" || k === "d+") {
+        mo.fields.forEach(function (f) { if (!f.seconds) return; var L = secondsOf(f), i = L.indexOf(vals[f.key]) + (k === "d+" ? 1 : -1); if (L[i] != null) vals[f.key] = L[i]; });
+      } else if (k.indexOf("f:") === 0) {
+        var key = k.slice(2);
+        mo.fields.forEach(function (f) { if (f.key === key) vals[key] = f.options[(f.options.indexOf(vals[key]) + 1) % f.options.length]; });
+      }
+      hideTip(); render();
+    });
+
+    /* hover names: one tip above the chip, after a short rest (or at once on keyboard focus) */
+    var tipT = 0, tipFor = null;
+    var hideTip = function () { clearTimeout(tipT); tipFor = null; tipEl.classList.remove("on"); };
+    var showTip = function (el) {
+      var name = el.getAttribute("data-tip"), hint = el.getAttribute("data-hint");
+      tipEl.innerHTML = esc(name) + (hint ? "<small>" + esc(hint) + "</small>" : "");
+      var big = pdBig.getBoundingClientRect(), r = el.getBoundingClientRect();
+      tipEl.style.left = "0px"; var w = tipEl.offsetWidth;
+      var x = Math.max(0, Math.min(big.width - w, r.left - big.left + r.width / 2 - w / 2));
+      tipEl.style.left = x + "px"; tipEl.style.bottom = (big.bottom - r.top + 8) + "px";
+      tipEl.classList.add("on");
+    };
+    chipsEl.addEventListener("pointerover", function (e) {
+      var el = e.target.closest("[data-tip]"); if (!el || el === tipFor) return;
+      hideTip(); tipFor = el; tipT = setTimeout(function () { if (tipFor === el && isOpen && Date.now() - openedAt > 500) showTip(el); }, 400);
+    });
+    chipsEl.addEventListener("pointerleave", hideTip);
+    chipsEl.addEventListener("focusin", function (e) { var el = e.target.closest("[data-tip]"); if (el && e.target.matches(":focus-visible")) { hideTip(); tipFor = el; showTip(el); } });
+    chipsEl.addEventListener("focusout", hideTip);
+
+    /* the rail: Image over Video; arrows move between them */
+    rail.querySelectorAll("[data-pd-mode]").forEach(function (b) {
+      b.addEventListener("click", function () { var m = b.getAttribute("data-pd-mode"); if (m === mode) return; mode = m; render(); });
       b.addEventListener("keydown", function (e) {
-        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
-        e.preventDefault(); mode = mode === "image" ? "video" : "image"; render(); pd.querySelector('[data-pd-mode="' + mode + '"]').focus();
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.key) < 0) return;
+        e.preventDefault(); mode = mode === "image" ? "video" : "image"; render(); rail.querySelector('[data-pd-mode="' + mode + '"]').focus();
       });
     });
-    var cyc = function (k, len) { state[mode][k] = (state[mode][k] + 1) % len; render(); };
-    pd.querySelector('[data-pd="model"]').addEventListener("click", function () { cyc("m", PD[mode].models.length); });
-    pd.querySelector('[data-pd="ar"]').addEventListener("click", function () { cyc("ar", PD[mode].ar.length); });
-    pd.querySelector('[data-pd="q"]').addEventListener("click", function () { cyc("q", PD[mode].q.length); });
-    dec.addEventListener("click", function () { var st = state[mode]; if (st.n > PD[mode].n[0]) { st.n--; render(); } });
-    inc.addEventListener("click", function () { var st = state[mode]; if (st.n < PD[mode].n[1]) { st.n++; render(); } });
-    var sw = pd.querySelector(".pd-sw");
-    sw.addEventListener("click", function () { sw.setAttribute("aria-checked", sw.getAttribute("aria-checked") === "true" ? "false" : "true"); });
     render();
 
+    /* the status pill: what a held Generate waits for; it glows again on each held click */
+    var showStatus = function (msg) {
+      statusBtn.querySelector("span").textContent = msg; statusBtn.hidden = false;
+      statusBtn.style.animation = "none"; void statusBtn.offsetWidth; statusBtn.style.animation = "";
+    };
+    statusBtn.addEventListener("click", function () { pdTa.focus(); });
+
     /* the textarea grows with the prompt, up to 120px */
-    pdTa.addEventListener("input", function () { pdTa.style.height = "auto"; pdTa.style.height = Math.min(pdTa.scrollHeight, 120) + "px"; pdIn.value = pdTa.value; });
+    pdTa.addEventListener("input", function () { pdTa.style.height = "auto"; pdTa.style.height = Math.min(pdTa.scrollHeight, 120) + "px"; pdIn.value = pdTa.value; if (pdTa.value.trim()) statusBtn.hidden = true; });
     pdTa.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); pdCard.requestSubmit ? pdCard.requestSubmit() : pdCard.dispatchEvent(new Event("submit")); } });
 
-    var nudge = function (el) { el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge"); snd("tick"); };
     pdMini.addEventListener("submit", function (e) { e.preventDefault(); setOpen(true, true); });
+    /* Generate is never greyed out: held, a click says what it waits for (the status pill) */
     pdCard.addEventListener("submit", function (e) {
       e.preventDefault();
-      var go = pd.querySelector(".pd-gen");
-      if (!pdTa.value.trim()) { pdTa.focus(); nudge(pdCard); return; }
-      go.setAttribute("data-busy", ""); snd("pop");
-      setTimeout(function () { go.removeAttribute("data-busy"); pdTa.value = ""; pdIn.value = ""; pdTa.style.height = ""; }, 900);
+      if (genBtn.hasAttribute("data-busy")) return;
+      if (!pdTa.value.trim()) { showStatus("Write a prompt to generate"); snd("tick"); pdTa.focus(); return; }
+      statusBtn.hidden = true;
+      genBtn.setAttribute("data-busy", ""); genBtn.setAttribute("aria-busy", "true"); genBtn.innerHTML = '<span class="pd-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="pd-busy">Generating</span>'; snd("pop");
+      setTimeout(function () { genBtn.removeAttribute("data-busy"); genBtn.removeAttribute("aria-busy"); genBtn.textContent = "Generate"; pdTa.value = ""; pdIn.value = ""; pdTa.style.height = ""; }, 1400);
     });
   }
 

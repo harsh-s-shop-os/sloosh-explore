@@ -1005,65 +1005,147 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 
 .pdock.nudge .pd-box, .pd-card.nudge { animation: pd-nudge 360ms var(--ease-arrive); }
 
-/* ---------- mini prompt v2: hover or tap opens the studio composer (dev.sloosh.ai/studio) with Image / Video tabs ----------
-   The pill stays in the flow (52px); the composer sits absolutely above it, so opening never shifts the page.
-   The morph: the composer starts clipped to the pill's exact box and opens out to its own, while the pill fades. */
+/* ---------- mini prompt v3: hover or tap grows the pill into the Studio composer ----------
+   Built from Sloosh-design's PromptComposer + shopos-ui's Sloosh composer (packages/studio prompt-composer.tsx,
+   mode-toggle.tsx, config-chips.tsx at the "lg" chip size): a 72px Image / Video rail beside the card, the prompt,
+   one chip row (Add, Model, Enhance, the model's own fields, Sound, Camera, count), Generate 140 x 92 bottom right.
+   The morph: one surface (.pd-shell) draws the pill at rest and the card when open, and moves between the two boxes;
+   the pill's contents fade out first, the card's contents rise in once the surface has mostly arrived, the rail
+   slides out from behind it. Closing runs the same steps backwards. The pill stays in the flow (52px), so the
+   page never shifts. */
 .pd-stage { position: relative; display: flex; justify-content: center; width: 100%; height: 52px; }
-.pd-box { transition: opacity 180ms ease, transform 300ms var(--ease-arrive), width 360ms var(--ease-arrive); }
-.pdock.open .pd-box { opacity: 0; transform: scale(0.97); pointer-events: none; }
-.pd-big { --mw: min(400px, 100vw - 32px); position: absolute; left: 50%; bottom: 0; width: min(800px, calc(100vw - 32px)); transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; pointer-events: none; opacity: 0;
-  clip-path: inset(calc(100% - 52px) calc((100% - var(--mw)) / 2) 0 round 26px);
-  transition: clip-path 380ms var(--ease-arrive), opacity 160ms ease; }
-.pdock.open .pd-big { pointer-events: auto; opacity: 1; clip-path: inset(-24px -24px -24px -24px round 20px); }
-.pd-big > * { opacity: 0; transform: translateY(6px); transition: opacity 160ms ease, transform 300ms var(--ease-arrive); }
-.pdock.open .pd-big > * { opacity: 1; transform: none; transition-delay: 90ms; }
-.pdock.open .pd-big > .pd-tabs { transition-delay: 140ms; }
 
-/* tabs: TextSegmentedSwitch, small */
-.pd-tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 16px; background: hsl(var(--n900) / 0.9); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px hsl(var(--border)); }
-.pd-tabs button { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: hsl(var(--muted-foreground)); transition: color 160ms ease, background-color 160ms ease; }
-.pd-tabs button .ic16 { width: 16px; height: 16px; }
-.pd-tabs button[aria-selected="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
-@media (hover: hover) { .pd-tabs button:hover { color: hsl(var(--foreground)); } }
+/* the pill: 52 tall, 8px inset, 36px buttons at 12px corners, so the surface's corner is 12 + 8 = 20 */
+.pdock .pd-box { position: relative; z-index: 2; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; border-radius: 20px; }
+.pdock .pd-box .key { border-radius: 12px; }
+.pd-box > * { transition: opacity 160ms ease 200ms; }
+.pdock.open .pd-box { pointer-events: none; }
+.pdock.open .pd-box > * { opacity: 0; transition: opacity 90ms ease; }
 
-/* the card: same as the studio composer (radius 20, card fill, 1px border, 16px padding, Generate on the right) */
-.pd-card { display: flex; align-items: flex-end; gap: 12px; width: 100%; padding: 16px; border-radius: 20px; background: hsl(var(--card)); box-shadow: 0 18px 40px -18px hsl(0 0% 0% / 0.7), inset 0 0 0 1px hsl(var(--border)); }
-.pd-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-.pd-main textarea { width: 100%; min-height: 48px; max-height: 120px; resize: none; border: 0; outline: 0; background: none; padding: 0; color: hsl(var(--foreground)); font-family: inherit; font-size: 16px; line-height: 24px; }
+/* the composer: rail + card, bottom-aligned with the pill */
+.pd-big { --rail: 72px; --gap: 8px; position: absolute; left: 50%; bottom: 0; z-index: 1; width: min(800px, 100%); transform: translateX(-50%);
+  display: flex; align-items: stretch; gap: var(--gap); pointer-events: none; }
+.pdock.open .pd-big { pointer-events: auto; }
+
+/* the one surface: the pill's box at rest, the card's box when open */
+.pd-shell { position: absolute; z-index: 1; pointer-events: none;
+  left: calc((100% - min(400px, 100%)) / 2); right: calc((100% - min(400px, 100%)) / 2); top: calc(100% - 52px); bottom: 0;
+  border-radius: 20px; background: hsl(var(--card) / 0.84); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 12px 32px -6px hsl(var(--n950) / 0.6), inset 0 0 0 1px hsl(var(--border));
+  transition: left 340ms cubic-bezier(0.32, 0.72, 0, 1) 40ms, right 340ms cubic-bezier(0.32, 0.72, 0, 1) 40ms, top 340ms cubic-bezier(0.32, 0.72, 0, 1) 40ms,
+    background-color 200ms ease, box-shadow 200ms ease; }
+.pdock.open .pd-shell { left: calc(var(--rail) + var(--gap)); right: 0; top: 0; background: hsl(var(--card));
+  box-shadow: 0 18px 40px -18px hsl(0 0% 0% / 0.7), inset 0 0 0 1px hsl(var(--border));
+  transition-duration: 440ms, 440ms, 440ms, 200ms, 200ms; transition-delay: 0ms; }
+[data-theme="light"] .pdock.open .pd-shell { box-shadow: var(--shadow-panel), inset 0 0 0 1px hsl(var(--border)); }
+
+/* the rail (mode-toggle.tsx, video rail): 72 wide, as tall as the card, the highlight glides between the halves */
+.pd-rail { position: relative; z-index: 0; flex: none; width: var(--rail); display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: 16px;
+  background: hsl(var(--card)); box-shadow: inset 0 0 0 1px hsl(var(--border));
+  opacity: 0; transform: translateX(56px) scale(0.96); transition: opacity 160ms ease, transform 260ms cubic-bezier(0.5, 0, 0.75, 0); }
+.pdock.open .pd-rail { opacity: 1; transform: none; transition: opacity 220ms ease 90ms, transform 460ms cubic-bezier(0.34, 1.3, 0.64, 1) 70ms; }
+.pd-rail-hl { position: absolute; left: 4px; right: 4px; top: 4px; height: calc((100% - 12px) / 2); border-radius: 12px; pointer-events: none;
+  background: hsl(var(--muted)); box-shadow: inset 0 -2px 0 hsl(var(--secondary-edge)); transition: transform 300ms cubic-bezier(0.34, 1.45, 0.64, 1); }
+.pd-rail[data-mode="video"] .pd-rail-hl { transform: translateY(calc(100% + 4px)); }
+.pd-rail button { position: relative; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 12px; font-size: 12px; font-weight: 500; line-height: 1.4; color: hsl(var(--muted-foreground)); transition: color 150ms ease, background-color 150ms ease; }
+.pd-rail button svg { width: 20px; height: 20px; opacity: 0.7; transition: opacity 150ms ease; }
+.pd-rail button[aria-selected="true"] { color: hsl(var(--foreground)); font-weight: 600; }
+.pd-rail button[aria-selected="true"] svg { opacity: 1; }
+@media (hover: hover) { .pd-rail button[aria-selected="false"]:hover { background: hsl(var(--muted) / 0.5); color: hsl(var(--foreground)); } .pd-rail button:hover svg { opacity: 1; } }
+.pd-rail button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -2px; }
+
+/* the card: 16 inset, 12 between rows, Generate bottom right; the surface behind it draws its fill, edge and shadow */
+.pd-card { position: relative; z-index: 2; flex: 1 1 auto; min-width: 0; display: flex; align-items: flex-end; gap: 12px; padding: 16px; border-radius: 20px; }
+.pd-card > * { opacity: 0; transform: translateY(8px); transition: opacity 100ms ease, transform 160ms ease; }
+.pdock.open .pd-card > * { opacity: 1; transform: none; transition: opacity 240ms ease 170ms, transform 360ms var(--ease-arrive) 150ms; }
+.pd-main { flex: 1 1 auto; min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; }
+/* the prompt: 48 tall at rest, 16/24, grows to 120, then scrolls */
+.pd-main textarea { display: block; width: 100%; min-height: 48px; max-height: 120px; flex: 1 1 auto; resize: none; border: 0; outline: 0; background: none; padding: 0;
+  color: hsl(var(--foreground)); font-family: inherit; font-size: 16px; font-weight: 400; line-height: 24px; }
 .pd-main textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
-.pd-ctl { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(to right, #000, #000 calc(100% - 24px), transparent); padding-right: 24px; }
+
+/* the chip row: one line that scrolls sideways; a clipped edge fades */
+.pd-ctl { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .pd-ctl::-webkit-scrollbar { display: none; }
 .pd-ctl > * { flex: none; }
-.pd-ic { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); transition: background-color 160ms ease; }
-.pd-ic svg { width: 18px; height: 18px; }
-.pd-chip { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 5px 12px 5px 5px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); font-size: 14px; font-weight: 500; white-space: nowrap; transition: background-color 160ms ease; }
-@media (hover: hover) { .pd-ic:hover, button.pd-chip:hover { background: hsl(var(--muted) / 0.8); color: hsl(var(--foreground)); } }
-button.pd-chip:active, .pd-ic:active { transform: scale(0.97); }
-.pd-tile { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 6px; background: hsl(var(--n700)); overflow: hidden; }
+.pd-ctl.clip-end { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent); }
+.pd-ctl.clip-start { -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem); mask-image: linear-gradient(to right, transparent, #000 2rem); }
+.pd-ctl.clip-start.clip-end { -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent); }
+/* every control in the row is 32 tall at 12px corners (the composer's "lg" chip size) */
+.pd-plus, .pd-cam { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); transition: background-color 150ms ease, color 150ms ease; }
+.pd-plus svg { width: 18px; height: 18px; }
+.pd-cam svg { width: 16px; height: 16px; }
+.pd-cam[aria-pressed="true"] { background: hsl(var(--foreground)); color: hsl(var(--background)); }
+.pd-chip { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 5px 12px 5px 5px; border-radius: 12px; background: hsl(var(--muted));
+  color: hsl(var(--foreground-subtle)); font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; transition: background-color 150ms ease; }
+.pd-sw-chip { gap: 8px; padding-right: 8px; }
+@media (hover: hover) { .pd-plus:hover, button.pd-chip:hover, .pd-cam[aria-pressed="false"]:hover { background: hsl(var(--accent)); } }
+.pd-tile { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 6px; background: hsl(var(--accent)); overflow: hidden; }
 .pd-tile svg { width: 12px; height: 12px; }
 .pd-tile img { width: 12px; height: 12px; object-fit: contain; }
 .pd-tile img.mono { filter: invert(1); }
-.pd-ar { display: block; border: 1px solid currentColor; border-radius: 1px; width: 6px; height: 6px; transition: width 200ms var(--ease-arrive), height 200ms var(--ease-arrive); }
-.pd-en { padding-right: 8px; }
+[data-theme="light"] .pd-tile img.mono { filter: none; }
+.pd-ar { display: block; border: 1px solid currentColor; border-radius: 1px; }
+/* Enhance / Sound: icon + switch, the name lives in the tooltip */
 .pd-sw { position: relative; width: 30px; height: 18px; border-radius: 999px; background: hsl(var(--border-strong)); transition: background-color 160ms ease; }
 .pd-sw span { position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: hsl(var(--n0)); transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 160ms ease; }
 .pd-sw[aria-checked="true"] { background: hsl(var(--brand-accent)); }
-.pd-sw[aria-checked="true"] span { transform: translateX(12px); background: hsl(var(--n950)); }
-.pd-sw:focus-visible, .pd-chip:focus-visible, .pd-ic:focus-visible, .pd-step button:focus-visible, .pd-tabs button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.pd-sw[aria-checked="true"] span { transform: translateX(12px); background: hsl(var(--brand-accent-foreground)); }
+.pd-sw[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+/* the +/- stepper: count ("1 image", "1/4") and a video's duration ("8s") */
 .pd-step { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 5px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); }
-.pd-step button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: hsl(var(--foreground)); }
-.pd-step button[aria-disabled="true"] { color: hsl(var(--n600)); cursor: default; }
+.pd-step button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: hsl(var(--foreground)); transition: background-color 150ms ease, color 150ms ease; }
+@media (hover: hover) { .pd-step button:not([aria-disabled="true"]):hover { background: hsl(var(--accent)); } }
+.pd-step button[aria-disabled="true"] { color: hsl(var(--disabled-foreground)); cursor: default; }
 .pd-step button svg { width: 14px; height: 14px; }
 .pd-n { min-width: 30px; padding: 0 2px; text-align: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pd-plus:focus-visible, .pd-cam:focus-visible, .pd-chip:focus-visible, .pd-sw:focus-visible, .pd-step button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+/* hover names: what each chip controls (one floating tip, placed by explore.js) */
+.pd-tipbox { position: absolute; z-index: 5; left: 0; bottom: 0; max-width: 240px; padding: 6px 8px; border-radius: 8px; background: hsl(var(--popover));
+  box-shadow: inset 0 0 0 1px hsl(var(--border)), 0 8px 24px -8px hsl(0 0% 0% / 0.5); color: hsl(var(--foreground)); font-size: 12px; font-weight: 500; line-height: 1.4;
+  pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity 120ms ease, transform 160ms var(--ease-arrive); }
+.pd-tipbox.on { opacity: 1; transform: none; }
+.pd-tipbox small { display: block; font-size: 12px; font-weight: 400; color: hsl(var(--muted-foreground)); }
+
+/* Generate: the brand keycap at 140 x 92, corner 14, 4px lip */
 .pd-gen.key { flex: none; width: 140px; height: 92px; padding: 0 8px; border-radius: 14px; font-size: 16px; font-weight: 600; --d: 4px; }
+.pd-gen.key { flex-direction: column; gap: 6px; }
+.pd-gen[data-busy] { cursor: progress; }
+.pd-dots { display: inline-flex; align-items: center; gap: 6px; height: 18px; }
+.pd-dots i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.3; animation: pd-dot 1050ms ease-in-out infinite; }
+.pd-dots i:nth-child(2) { animation-delay: 150ms; } .pd-dots i:nth-child(3) { animation-delay: 300ms; }
+.pd-busy { font-size: 12px; font-weight: 600; opacity: 0.6; }
+@keyframes pd-dot { 0%, 70%, 100% { opacity: 0.3; transform: none; } 35% { opacity: 1; transform: translateY(-3px); } }
+
+/* what a held Generate waits for: a pill above the card that glows once per held click */
+.pd-status { position: absolute; left: calc(var(--rail) + var(--gap)); bottom: calc(100% + 8px); z-index: 2; display: flex; }
+.pd-pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px 0 8px; border-radius: 12px; background: hsl(var(--card));
+  box-shadow: inset 0 0 0 1px hsl(var(--border-strong)); color: hsl(var(--foreground-subtle)); font-size: 12px; font-weight: 500; white-space: nowrap;
+  animation: pd-pill-in 220ms ease-out, pd-pill-glow 700ms ease-in-out; }
+.pd-pill[hidden] { display: none; }
+.pd-pill svg { width: 14px; height: 14px; flex: none; }
+@keyframes pd-pill-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes pd-pill-glow { 0%, 100% { box-shadow: inset 0 0 0 1px hsl(var(--border-strong)), 0 0 0 0 transparent; } 30%, 70% { box-shadow: inset 0 0 0 1px hsl(var(--border-strong)), 0 0 0 3px hsl(var(--brand-accent) / 0.45); } }
+
+/* phones: the rail runs across the top, the card stacks, Generate goes full width */
 @media (max-width: 640px) {
+  .pd-big { --rail: 0px; --gap: 0px; flex-direction: column; gap: 8px; }
+  .pd-rail { width: auto; height: 48px; flex-direction: row; transform: translateY(16px); }
+  .pd-rail-hl { top: 4px; bottom: 4px; height: auto; width: calc((100% - 12px) / 2); right: auto; }
+  .pd-rail[data-mode="video"] .pd-rail-hl { transform: translateX(calc(100% + 4px)); }
+  .pd-rail button { flex-direction: row; gap: 8px; }
+  .pd-rail button svg { width: 18px; height: 18px; }
+  .pdock.open .pd-shell { left: 0; top: 56px; }
+  .pd-status { left: 0; }
   .pd-card { flex-direction: column; align-items: stretch; }
   .pd-gen.key { width: 100%; height: 48px; border-radius: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pd-big, .pd-big > *, .pd-box { transition: opacity 150ms ease; }
-  .pd-big { clip-path: none; } .pd-big > * { transform: none; }
+  .pd-shell, .pdock.open .pd-shell { transition: background-color 150ms ease, box-shadow 150ms ease; }
+  .pd-rail, .pdock.open .pd-rail, .pd-card > *, .pdock.open .pd-card > * { transform: none; transition: opacity 150ms ease; }
+  .pd-rail-hl, .pd-sw span { transition: none; }
+  .pd-pill { animation: none; }
 }
 
 /* ---------- cast + series v3: six cards per tab in three columns, a wider Cast card with its face reel on top ---------- */
