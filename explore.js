@@ -730,6 +730,7 @@
   var doc = document, host = doc.querySelector("[data-drop]:not([hidden])");
   if (!host || host.hidden) return;
   var I = window.SlooshInk || null;
+  var V3 = host.classList.contains("dr-v3"), ALWAYS = host.getAttribute("data-free") === "always"; /* v3: #drop-2, every run leaves 2 for now */
   var $ = function (s, r) { return (r || host).querySelector(s); }, $$ = function (s, r) { return [].slice.call((r || host).querySelectorAll(s)); };
   var snd = function (k) { if (window.slSound) window.slSound(k); };
   var RM = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -846,8 +847,10 @@
   };
   var FREE = 3;
   function used() { var n = 0; try { n = +sessionStorage.getItem("sl-surprise") || 0; } catch (e) {} return n; }
-  function use() { try { sessionStorage.setItem("sl-surprise", used() + 1); } catch (e) {} }
-  function left() { return Math.max(0, FREE - used()); }
+  function use() { if (ALWAYS) return; try { sessionStorage.setItem("sl-surprise", used() + 1); } catch (e) {} }
+  function left() { return ALWAYS ? 2 : Math.max(0, FREE - used()); }
+  var T3 = { person: "Three new looks for you", product: "Three new looks for your product", thing: "Three new looks for your photo" };
+  function title() { return V3 ? T3[cur.kind] : KIND[cur.kind].title; }
 
   var box = $(".dr-box"), inp = $(".dr-zone input"), run = $(".dr-run"), ph = $(".dr-ph img"), tags = $(".dr-tags"), cards = $$(".dr-card");
   var outT = $(".dr-out-t"), outS = $(".dr-out-s"), count = $(".dr-count");
@@ -865,7 +868,7 @@
   function start(src, preset) {
     clear(); var img = new Image();
     img.onload = function () {
-      var kind = preset ? preset.kind : guess(img);
+      var kind = preset ? preset.kind : V3 ? "product" : guess(img); /* v3: the hero asks for a product */
       cur = { img: img, kind: kind, tags: preset ? preset.tags : [kind === "person" ? "Person" : kind === "product" ? "Product" : "Object", img.naturalWidth >= img.naturalHeight ? "Landscape" : "Portrait", "Good light"] };
       round = 0; ph.src = src; host.classList.add("res"); go();
       requestAnimationFrame(function () { host.scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "start" }); });
@@ -877,7 +880,7 @@
     if (left() === 0) { run.dataset.s = "limit"; return; }
     var looks = KIND[cur.kind].order.slice((round % 2) * 3, (round % 2) * 3 + 3);
     run.dataset.s = "read"; tags.innerHTML = "";
-    outT.textContent = "Making three looks…"; outS.textContent = "Reading your photo first, then Meta Muse takes three tries.";
+    outT.textContent = "Making three looks…"; if (outS) outS.textContent = "Reading your photo first, then Meta Muse takes three tries.";
     cards.forEach(function (c) { c.classList.remove("on"); var cv = $(".dr-cv", c); $$("canvas", cv).forEach(function (x) { x.remove(); }); $("b", c).textContent = ""; $(".dr-cap span", c).textContent = ""; });
     requestAnimationFrame(inkLoaders);
     var fast = RM ? 0.2 : 1;
@@ -888,19 +891,49 @@
         $(".dr-cv", c).appendChild(cv); $("b", c).textContent = LOOKS[lk][0]; $(".dr-cap span", c).textContent = LOOKS[lk][1];
         $(".dr-open", c).setAttribute("aria-label", "Open " + LOOKS[lk][0] + " in Studio");
         requestAnimationFrame(function () { requestAnimationFrame(function () { c.classList.add("on"); }); });
-        if (i === 2) { use(); round++; later(function () { run.dataset.s = left() === 0 ? "limit" : "done"; outT.textContent = KIND[cur.kind].title; outS.textContent = "Three looks from one photo, made with Meta Muse."; sync(); snd("pop"); }, 400); }
+        if (i === 2) { use(); round++; later(function () { run.dataset.s = left() === 0 ? "limit" : "done"; outT.textContent = title(); if (outS) outS.textContent = "Three looks from one photo, made with Meta Muse."; sync(); snd("pop"); }, 400); }
       }, (3400 + i * 450) * fast);
     });
   }
 
   inp.addEventListener("change", function () { var f = inp.files && inp.files[0]; if (f) read(f); inp.value = ""; });
   function read(f) { if (!/^image\//.test(f.type)) return toast("That one isn’t a picture. Try a JPG or PNG."); var r = new FileReader(); r.onload = function () { start(r.result); }; r.readAsDataURL(f); }
-  ["dragenter", "dragover"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); if (!host.classList.contains("res")) box.classList.add("over"); }); });
+  ["dragenter", "dragover"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); if (V3 || !host.classList.contains("res")) box.classList.add("over"); }); });
   ["dragleave", "drop"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); if (ev === "dragleave" && host.contains(e.relatedTarget)) return; box.classList.remove("over"); }); });
   host.addEventListener("drop", function (e) { var f = e.dataTransfer && e.dataTransfer.files[0]; if (f) read(f); });
-  $(".dr-rail").addEventListener("click", function (e) {
-    var b = e.target.closest(".dr-pill"); if (!b) return;
-    start(b.getAttribute("data-src"), { kind: b.getAttribute("data-kind"), tags: (b.getAttribute("data-tags") || "").split("|") });
+  function pick(b) { start(b.getAttribute("data-src"), { kind: b.getAttribute("data-kind"), tags: (b.getAttribute("data-tags") || "").split("|") }); }
+  var rail = $(".dr-rail");
+  if (rail) rail.addEventListener("click", function (e) { var b = e.target.closest(".dr-pill"); if (b) pick(b); });
+  /* v3 prints: click to use one; with a mouse or pen, press to pick it up (5% bigger), drag it onto the box and let go.
+     Let go anywhere else and it slides home. Touch only taps, so the page still scrolls. */
+  $$(".dr-print").forEach(function (p) {
+    var dragged = false;
+    p.addEventListener("click", function (e) { if (dragged) { dragged = false; e.preventDefault(); return; } pick(p); });
+    p.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0 || e.pointerType === "touch") return;
+      e.preventDefault();
+      var sx = e.clientX, sy = e.clientY, moved = false, id = e.pointerId;
+      try { p.setPointerCapture(id); } catch (er) {}
+      p.classList.remove("home"); p.classList.add("lift");
+      function onBox(ev) { var r = box.getBoundingClientRect(); return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom; }
+      function mv(ev) {
+        var dx = ev.clientX - sx, dy = ev.clientY - sy;
+        if (!moved && dx * dx + dy * dy > 16) { moved = true; host.classList.add("dragging"); }
+        if (moved) { p.style.translate = dx + "px " + (dy - 2) + "px"; box.classList.toggle("over", onBox(ev)); }
+      }
+      function up(ev) {
+        p.removeEventListener("pointermove", mv); p.removeEventListener("pointerup", up); p.removeEventListener("pointercancel", up);
+        host.classList.remove("dragging"); box.classList.remove("over"); p.classList.remove("lift");
+        if (!moved) { p.style.translate = ""; return; }
+        dragged = true; setTimeout(function () { dragged = false; }, 0);
+        if (ev.type === "pointerup" && onBox(ev)) {
+          p.classList.add("used"); snd("pop");
+          setTimeout(function () { p.style.translate = ""; requestAnimationFrame(function () { p.classList.remove("used"); }); }, 160);
+          pick(p);
+        } else { p.classList.add("home"); p.style.translate = ""; snd("whoosh"); setTimeout(function () { p.classList.remove("home"); }, 320); }
+      }
+      p.addEventListener("pointermove", mv); p.addEventListener("pointerup", up); p.addEventListener("pointercancel", up);
+    });
   });
   btnAgain.addEventListener("click", function () { if (btnAgain.getAttribute("aria-disabled") !== "true") go(); });
   btnRegen.addEventListener("click", function () { if (btnRegen.getAttribute("aria-disabled") !== "true") go(); });

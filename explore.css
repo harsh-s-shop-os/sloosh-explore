@@ -1405,6 +1405,111 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
   .dr-cv canvas { transition: none; }
 }
 
+/* ---------- 0b. drop hero v3 (#drop-2, .dr-v3): the box alone, sample photos scattered around it as prints ----------
+   Prints near the content sit a fixed distance from the centre (.at-c); the outer ones hang off the section edge (.at-l/.at-r)
+   but never drift further than 800px from the centre. Below 1080px of section width they line up under the box.
+   The result card is one grid: your image | divider | three looks, all four the same size, one 40px button size. */
+.dr-v3 { container-type: inline-size; min-height: 0; padding: 48px 0 100px; overflow-x: clip; overflow-y: visible; scroll-margin-top: 61px; }
+.shell-side .dr-v3 { scroll-margin-top: 0; }
+.shell-side .dr-v3 { min-height: 0; }
+.dr-v3.dragging { z-index: 6; }
+.dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 32px; }
+.dr-v3 .dr-stage { max-width: 640px; }
+.dr-v3.res .dr-stage { max-width: 1160px; }
+.dr-v3 .dr-zone { padding: 48px 24px 44px; }
+.dr-v3.res .dr-box.over { box-shadow: inset 0 0 0 2px hsl(var(--brand-accent)); }
+/* the note, said by one bird */
+.dr-v3 .dr-note { display: none; }
+.dr-v3 .dr-note-l { top: 36px; }
+.dr-v3 .dr-say { display: flex; align-items: flex-end; gap: 6px; }
+.dr-v3 .dr-say .dr-hand { margin-bottom: 14px; }
+.dr-v3 .dr-crit { position: static; transform: none; }
+.dr-v3 .dr-note-l .dr-arw { margin-top: -6px; }
+.dr-v3.res .dr-note { opacity: 0; }
+@container (min-width: 1180px) { .dr-v3 .dr-note { display: flex; } }
+
+/* prints: white border, a flat lip under them, the keycap glint on hover; pressed and dragged they lift 5% */
+.dr-scatter { position: absolute; inset: 0; pointer-events: none; } /* no z-index: a lifted print must rise above the box */
+.dr-scatter-t { display: none; }
+.dr-print { --lp: 4px; position: absolute; z-index: 0; top: var(--y); width: calc(var(--w) + 12px); padding: 6px; border: 0; border-radius: 10px; overflow: hidden; isolation: isolate;
+  background: hsl(var(--n0)); box-shadow: 0 var(--lp) 0 hsl(var(--n300)); rotate: var(--r, 0deg); pointer-events: auto; cursor: grab;
+  touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: translate 200ms var(--ease-hop), scale 160ms var(--ease-arrive), box-shadow 200ms var(--ease-hop), opacity 160ms ease; }
+[data-theme="light"] .dr-print { box-shadow: 0 0 0 1px hsl(var(--border)), 0 var(--lp) 0 hsl(var(--n300)); } /* white print on a white ground needs an edge */
+.dr-print img { display: block; width: 100%; aspect-ratio: var(--ar, 4 / 5); object-fit: cover; border-radius: 4px; pointer-events: none; -webkit-user-drag: none; }
+.dr-print.at-c { left: calc(50% + var(--cx)); }
+.dr-print.at-l { left: max(calc(50% - 50cqw + var(--ex)), calc(50% - 800px)); }
+.dr-print.at-r { right: max(calc(50% - 50cqw + var(--ex)), calc(50% - 800px)); }
+.dr-print::before, .dr-print::after { content: ""; position: absolute; z-index: 1; top: -20%; bottom: -20%; left: calc(-10% - 60px);
+  background: var(--keycap-shine); transform: skewX(-18deg); pointer-events: none; }
+.dr-print::before { width: 18px; }
+.dr-print::after { width: 6px; margin-left: 26px; }
+@media (hover: hover) {
+  .dr-print:hover { --lp: 6px; translate: 0 -2px; }
+  .dr-print:hover::before, .dr-print:hover::after { animation: glint 620ms cubic-bezier(0.45, 0, 0.2, 1); }
+}
+.dr-print:focus-visible { z-index: 4; outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.dr-print.lift { --lp: 8px; z-index: 5; scale: 1.05; translate: 0 -2px; cursor: grabbing; transition: scale 160ms var(--ease-arrive), box-shadow 160ms var(--ease-arrive); }
+.dr-print.lift::before, .dr-print.lift::after { animation: none; }
+.dr-print.home { transition: translate 280ms var(--ease-arrive), scale 160ms var(--ease-arrive), box-shadow 200ms var(--ease-hop); }
+.dr-print.used { opacity: 0; transition: opacity 120ms ease; }
+.dr-v3.dragging, .dr-v3.dragging * { cursor: grabbing !important; }
+@container (max-width: 1079px) {
+  .dr-v3 .dr-scatter { position: static; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-top: 24px; pointer-events: auto; }
+  .dr-v3 .dr-scatter-t { display: block; flex-basis: 100%; margin-bottom: 4px; font-size: 14px; font-weight: 500; line-height: 1.4; text-align: center; color: hsl(var(--muted-foreground)); }
+  .dr-v3 .dr-print { position: relative; top: auto; left: auto; right: auto; width: 76px; padding: 4px; border-radius: 8px; }
+  .dr-v3 .dr-print img { aspect-ratio: 1; }
+}
+@container (max-width: 520px) {
+  .dr-v3 .dr-print { width: 60px; }
+  .dr-v3 .dr-print:nth-of-type(n+6) { display: none; }
+}
+
+/* the result: one grid, your image and the three looks at the same size */
+.dr-v3 .dr-run { grid-template-columns: minmax(0, 1fr) 1px repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; column-gap: 16px; row-gap: 20px; padding: 24px; align-items: start; }
+.dr-v3 .dr-col-t { grid-column: 1; grid-row: 1; align-self: center; }
+.dr-v3 .dr-div { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin-block: -24px; background: hsl(var(--border)); }
+.dr-v3 .dr-out-h { grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
+.dr-v3 .dr-out-t { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.dr-v3 .dr-ph { grid-column: 1; grid-row: 2; }
+.dr-v3 .dr-cards { display: contents; }
+.dr-v3 .dr-card:nth-child(1) { grid-column: 3; grid-row: 2; }
+.dr-v3 .dr-card:nth-child(2) { grid-column: 4; grid-row: 2; }
+.dr-v3 .dr-card:nth-child(3) { grid-column: 5; grid-row: 2; }
+.dr-v3 .dr-back-row { grid-column: 1; grid-row: 3; display: flex; min-width: 0; }
+.dr-v3 .dr-back { margin-top: 0; }
+.dr-v3 .dr-foot { grid-column: 3 / 6; grid-row: 3; flex-direction: row; align-items: center; min-height: 40px; padding-top: 0; }
+.dr-v3 .dr-foot-out, .dr-v3 .dr-foot-in { flex: 1; flex-wrap: nowrap; justify-content: flex-end; gap: 12px; min-width: 0; }
+.dr-v3 .dr-foot-note, .dr-v3 .dr-saved { margin-right: auto; min-width: 0; }
+.dr-v3 .dr-tags { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; min-height: 0; }
+.dr-v3 .dr-tags span { background: hsl(var(--media-scrim) / 0.7); color: hsl(var(--on-media)); }
+.dr-v3 .dr-count { background: hsl(var(--accent)); color: hsl(var(--foreground)); } /* DS CountPill, neutral: readable in both themes */
+@container (max-width: 999px) {
+  .dr-v3 .dr-run { grid-template-columns: 88px minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "tin tin" "ph back" "oh oh" "cards cards" "foot foot"; column-gap: 16px; row-gap: 16px; padding: 20px; }
+  .dr-v3 .dr-col-t { grid-area: tin; }
+  .dr-v3 .dr-div { display: none; }
+  .dr-v3 .dr-ph { grid-area: ph; border-radius: 12px; }
+  .dr-v3 .dr-tags { display: none; }
+  .dr-v3 .dr-back-row { grid-area: back; align-self: end; }
+  .dr-v3 .dr-out-h { grid-area: oh; padding-top: 16px; border-top: 1px solid hsl(var(--border)); }
+  .dr-v3 .dr-cards { grid-area: cards; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .dr-v3 .dr-card:nth-child(n) { grid-column: auto; grid-row: auto; }
+  .dr-v3 .dr-foot { grid-area: foot; }
+  .dr-v3 .dr-foot-out, .dr-v3 .dr-foot-in { flex-wrap: wrap; }
+}
+@container (max-width: 640px) {
+  .dr-v3 .dr-out-h { flex-direction: column; align-items: flex-start; }
+  .dr-v3 .dr-cards { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: -20px; padding-inline: 20px; scroll-padding-inline: 20px; }
+  .dr-v3 .dr-cards::-webkit-scrollbar { display: none; }
+  .dr-v3 .dr-card { flex: none; width: 72%; scroll-snap-align: start; }
+  .dr-v3 .dr-foot-note { flex-basis: 100%; }
+}
+@media (max-width: 760px) { .dr-v3 { padding: 32px 0 48px; } .dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 24px; } }
+@media (prefers-reduced-motion: reduce) {
+  .dr-print, .dr-print.home { transition: opacity 160ms ease; }
+  .dr-print:hover::before, .dr-print:hover::after { animation: none; }
+}
+
 /* ---------- Gemini card: a white "Special offer" pill leads; the title steps down to plain 24px so the section title stays the only big one ---------- */
 .feat-offer { align-self: flex-start; display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 12px; background: hsl(var(--n0)); color: hsl(var(--n950)); font-size: 16px; font-weight: 600; line-height: 1; white-space: nowrap; }
 .feat-t { max-width: 440px; color: hsl(var(--on-media)); font-size: 24px; font-weight: 600; line-height: 1.2; text-wrap: balance; }
