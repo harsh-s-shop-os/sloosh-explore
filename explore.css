@@ -382,3 +382,20 @@ html[data-theme="light"] .agents .af-ic { background: hsl(var(--n0)); box-shadow
   .st { transition: opacity 200ms ease, visibility 0s; }
   .st-bar i.cur b { animation: none; transform: scaleX(1); }
 }
+
+/* tools with a real output: media on top, plays on hover; the rest keep an icon tile the same size */
+.tool { padding: 0; gap: 0; overflow: hidden; }
+.tool-m { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 10; overflow: hidden; background: hsl(var(--muted)); }
+.tool-m img, .tool-m video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 500ms var(--ease-arrive); }
+.tool-m video { opacity: 0; transition: opacity 240ms ease, transform 500ms var(--ease-arrive); }
+.tool[data-playing] .tool-m video { opacity: 1; }
+@media (hover: hover) { .tool:hover .tool-m img, .tool:hover .tool-m video { transform: scale(1.03); } }
+.tool-m.tile { color: hsl(var(--muted-foreground)); transition: background-color 150ms ease, color 150ms ease; }
+.tool-m.tile .ic { width: 32px; height: 32px; }
+@media (hover: hover) { .tool:hover .tool-m.tile { background: hsl(var(--brand-accent)); color: hsl(var(--brand-accent-foreground)); } }
+.tool-b { display: flex; flex-direction: column; gap: 16px; flex: 1; padding: 16px 20px 18px; }
+@media (max-width: 760px) {
+  .tools .tool { display: grid; grid-template-columns: 112px minmax(0, 1fr); grid-template-areas: none; padding: 0; column-gap: 0; row-gap: 0; align-items: stretch; }
+  .tools .tool-m { aspect-ratio: auto; min-height: 96px; }
+  .tools .tool-b { padding: 12px 14px; gap: 8px; }
+}
