@@ -222,11 +222,19 @@
       var im = doc.createElement("img"); im.src = src; im.alt = ""; im.decoding = "async";
       f.appendChild(im); return f;
     };
-    /* two copies of the eight, so the drift loops without a seam */
-    var reelBuild = function (srcs) {
-      track.textContent = "";
-      srcs.concat(srcs).forEach(function (s) { track.appendChild(face(s)); });
+    /* the eight repeated until one half of the track is wider than the card, then doubled, so the drift loops without a seam
+       even when the row runs edge to edge across a full-width card */
+    var reelReps = 0, reelSrcs = null;
+    var repsFor = function () {
+      var w = reel.clientWidth || 300, step = 46; /* 56px bubble, -10px overlap */
+      return Math.max(1, Math.ceil((w + step) / (8 * step)));
     };
+    var reelBuild = function (srcs) {
+      reelSrcs = srcs; reelReps = repsFor();
+      track.textContent = "";
+      for (var r = 0; r < reelReps * 2; r++) srcs.forEach(function (s) { track.appendChild(face(s)); });
+    };
+    window.addEventListener("resize", function () { if (reelSrcs && repsFor() > reelReps) reelBuild(reelSrcs); });
     /* the swap: each new face opens from the centre like an iris over the old one, left to right, with a small spring on the bubble */
     var reelSwap = function (srcs) {
       var bubbles = [].slice.call(track.children);
@@ -257,7 +265,7 @@
       var t = on ? on.getAttribute("data-tab") : "0";
       if (t === reelShown) return;
       var srcs = facesOf(t); if (!srcs.length) return;
-      if (reelShown === null) reelBuild(srcs); else reelSwap(srcs);
+      if (reelShown === null) reelBuild(srcs); else { reelSwap(srcs); reelSrcs = srcs; }
       reelShown = t;
     };
     reelSync();

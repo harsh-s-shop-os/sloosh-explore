@@ -939,3 +939,21 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .pdock { margin: -88px auto 88px; }
 }
 @media (prefers-reduced-motion: reduce) { .pdock, .pd-box { transition: none; } .pdock.nudge .pd-box { animation: none; } }
+
+/* ---------- cast card v2: one-line headline, CTA right under the copy, the face row as an edge-to-edge band on the card's bottom edge ---------- */
+.cast { overflow: hidden; gap: 16px; }
+.cast .key { margin-top: 4px; }
+.cast-reel { align-self: stretch; margin: auto -24px -14px; padding: 24px 0 0; -webkit-mask-image: none; mask-image: none; }
+.cast-track .cf { width: 56px; height: 56px; margin-right: -10px; box-shadow: 0 0 0 3px hsl(var(--card)); }
+@media (min-width: 761px) and (max-width: 1360px) {
+  .shell-side .cast { grid-template-areas: "top key" "h key" "p key" "reel reel"; }
+  .shell-side .cast-reel { grid-area: reel; margin: 16px -24px -14px; padding: 0; }
+}
+@media (max-width: 1280px) {
+  .cast { grid-template-areas: "top key" "h key" "p key" "reel reel"; }
+  .cast-reel { grid-area: reel; margin: 16px -24px -14px; padding: 0; }
+}
+@media (max-width: 760px) {
+  .cast .key { margin-top: 4px; }
+  .cast-reel { margin: 8px -24px -14px; }
+}
