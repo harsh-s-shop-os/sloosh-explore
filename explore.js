@@ -227,7 +227,7 @@
     doc.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen) { setOpen(false); } });
 
     /* hidden during the first fold */
-    var hero = doc.getElementById("stories");
+    var hero = doc.querySelector("#drop:not([hidden])") || doc.getElementById("stories");
     if (hero && "IntersectionObserver" in window) {
       new IntersectionObserver(function (es) {
         var e = es[0], off = e.isIntersecting && e.intersectionRatio > 0.4;
@@ -719,4 +719,174 @@
     if (!t.closest || t.closest("[data-snd], .key, .nl, .chip, .seg button, .mrow, .prow, .st-tap")) return;
     if (t.closest(".tabs button, .ag-tabs button, .ag-copy, .ag-docs, .si, .si-add, .tb, .mr, .tool, .mc, .ep-more, .st-tab, .st-arrow, .ft-cols a")) snd("tap");
   }, true);
+})();
+
+/* ---------- 0. drop hero: drop / choose / sample a photo, read it, pick three looks, draw them (stand-ins for Meta Muse) ----------
+   Ported from the boss artifact. 3 free a day (sessionStorage). The sample rail scrolls edge to edge, drags with a mouse, arrows on hover. */
+(function () {
+  var doc = document, host = doc.querySelector("[data-drop]");
+  if (!host || host.hidden) return;
+  var $ = function (s, r) { return (r || host).querySelector(s); }, $$ = function (s, r) { return [].slice.call((r || host).querySelectorAll(s)); };
+  var snd = function (k) { if (window.slSound) window.slSound(k); };
+  var RM = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var toastEl = $(".dr-toast"), toastT = 0;
+  function toast(t) { toastEl.textContent = t; toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, 2600); snd("pop"); }
+
+  var LOOKS = {
+    billboard: ["Billboard at night", "On a giant billboard in Shibuya, wet street reflections"],
+    magazine: ["Magazine cover", "Glossy cover, studio flash, bold masthead"],
+    studio: ["Pastel studio", "Floating over a ceramic plinth, soft shadow"],
+    polaroid: ["Polaroid on cork", "Taped polaroid, warm afternoon light"],
+    popart: ["Pop art print", "Four panels, halftone, loud colours"],
+    neon: ["Neon portrait", "Magenta and cyan rim light, glowing sign"]
+  };
+  var KIND = {
+    person: { name: "a person", order: ["magazine", "neon", "polaroid", "popart", "billboard", "studio"] },
+    product: { name: "a product", order: ["billboard", "studio", "magazine", "popart", "neon", "polaroid"] },
+    thing: { name: "a thing", order: ["studio", "popart", "polaroid", "billboard", "neon", "magazine"] }
+  };
+  var FREE = 3;
+  function used() { var n = 0; try { n = +sessionStorage.getItem("sl-surprise") || 0; } catch (e) {} return n; }
+  function use() { try { sessionStorage.setItem("sl-surprise", used() + 1); } catch (e) {} }
+
+  var box = $(".dr-box"), inp = $(".dr-zone input"), run = $(".dr-run"), ph = $(".dr-ph img"), tags = $(".dr-tags"), stat = $(".dr-stat p"), bar = $(".dr-bar i"), cards = $$(".dr-card");
+  var cur = null, round = 0, timers = [];
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function clear() { timers.forEach(clearTimeout); timers = []; }
+  function say(t, s) { stat.innerHTML = t + (s ? "<small>" + s + "</small>" : ""); }
+  function grow(to, ms) { bar.style.setProperty("--grow", (RM ? 0 : ms) + "ms"); bar.style.width = to + "%"; }
+  function left() { var n = Math.max(0, FREE - used()); $(".dr-left").textContent = n ? n + " of " + FREE + " free surprises left today" : ""; }
+  function guess(img) { var r = img.naturalHeight / img.naturalWidth; return r > 1.15 ? "person" : r < 0.9 ? "product" : "thing"; }
+
+  function start(src, preset) {
+    clear(); var img = new Image();
+    img.onload = function () {
+      var kind = preset ? preset.kind : guess(img);
+      cur = { img: img, kind: kind, tags: preset ? preset.tags : [kind === "person" ? "Person" : kind === "product" ? "Product" : "Object", img.naturalWidth >= img.naturalHeight ? "Landscape" : "Portrait", "Good light"] };
+      round = 0; ph.src = src; host.classList.add("res"); go();
+    };
+    img.src = src;
+  }
+  function go() {
+    clear();
+    if (used() >= FREE) { run.dataset.s = "limit"; say("You’ve used today’s free surprises.", "They come back tomorrow."); left(); return; }
+    var looks = KIND[cur.kind].order.slice((round % 2) * 3, (round % 2) * 3 + 3);
+    run.dataset.s = "read"; tags.innerHTML = ""; grow(0, 0);
+    cards.forEach(function (c) { c.classList.remove("on"); $(".dr-cv", c).innerHTML = ""; $(".dr-cap", c).innerHTML = ""; });
+    var fast = RM ? 0.2 : 1;
+    say("Looking at your photo…", "Is it a person, a product or a thing?"); requestAnimationFrame(function () { grow(22, 1200 * fast); });
+    later(function () {
+      cur.tags.forEach(function (t, i) { later(function () { tags.insertAdjacentHTML("beforeend", "<span>" + t + "</span>"); snd("tick"); }, i * 140); });
+      say("Looks like " + KIND[cur.kind].name + ".", "Picking three looks from 1,200 prompts made for it."); run.dataset.s = "pick"; grow(40, 700 * fast);
+    }, 1300 * fast);
+    later(function () { run.dataset.s = "make"; say("Making your surprises…", "Meta Muse, three takes at once."); grow(92, 2200 * fast); }, 2200 * fast);
+    looks.forEach(function (lk, i) {
+      later(function () {
+        var c = cards[i], cv = draw(lk, cur.img);
+        $(".dr-cv", c).appendChild(cv); $(".dr-cap", c).innerHTML = "<b>" + LOOKS[lk][0] + "</b>" + LOOKS[lk][1];
+        requestAnimationFrame(function () { c.classList.add("on"); });
+        if (i === 2) { use(); round++; grow(100, 200); later(function () { run.dataset.s = used() >= FREE ? "limit" : "done"; say(cur.kind === "person" ? "Here you go. Three of you." : "Here you go. Three looks.", "Keep the ones you like, or turn one into a video."); left(); snd("pop"); }, 300); }
+      }, (3600 + i * 380) * fast);
+    });
+  }
+
+  // drop, choose, or try a sample
+  inp.addEventListener("change", function () { var f = inp.files && inp.files[0]; if (f) read(f); inp.value = ""; });
+  function read(f) { if (!/^image\//.test(f.type)) return toast("That one isn’t a picture. Try a JPG or PNG."); var r = new FileReader(); r.onload = function () { start(r.result); }; r.readAsDataURL(f); }
+  ["dragenter", "dragover"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); if (ev === "dragleave" && host.contains(e.relatedTarget)) return; box.classList.remove("over"); }); });
+  host.addEventListener("drop", function (e) { var f = e.dataTransfer && e.dataTransfer.files[0]; if (f) read(f); });
+  $(".dr-rail").addEventListener("click", function (e) {
+    var b = e.target.closest(".dr-pill"); if (!b || moved) return;
+    start(b.getAttribute("data-src"), { kind: b.getAttribute("data-kind"), tags: (b.getAttribute("data-tags") || "").split("|") });
+  });
+  $(".dr-again").addEventListener("click", go);
+  $(".dr-reset").addEventListener("click", function () { clear(); host.classList.remove("res"); run.dataset.s = "idle"; });
+  $(".dr-keep").addEventListener("click", function () { toast("Sign up to keep them. They’re saved to your Assets."); });
+  $(".dr-limit").addEventListener("click", function () { toast("Sign up opens here. 50 free credits."); });
+
+  // the sample rail: scroll, drag with a mouse, arrows when there is more to see
+  var rail = $(".dr-rail"), prev = $(".dr-arr.prev"), next = $(".dr-arr.next"), moved = false, dragX = null, dragS = 0;
+  function edges() { prev.classList.toggle("can", rail.scrollLeft > 4); next.classList.toggle("can", rail.scrollLeft < rail.scrollWidth - rail.clientWidth - 4); }
+  rail.addEventListener("scroll", edges, { passive: true }); window.addEventListener("resize", edges); edges();
+  prev.addEventListener("click", function () { rail.scrollBy({ left: -rail.clientWidth * 0.7, behavior: RM ? "auto" : "smooth" }); });
+  next.addEventListener("click", function () { rail.scrollBy({ left: rail.clientWidth * 0.7, behavior: RM ? "auto" : "smooth" }); });
+  rail.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse" || e.button !== 0) return; dragX = e.clientX; dragS = rail.scrollLeft; moved = false; });
+  window.addEventListener("pointermove", function (e) { if (dragX === null) return; var d = e.clientX - dragX; if (!moved && Math.abs(d) > 5) { moved = true; rail.classList.add("drag"); } if (moved) rail.scrollLeft = dragS - d; });
+  window.addEventListener("pointerup", function () { if (dragX === null) return; dragX = null; rail.classList.remove("drag"); setTimeout(function () { moved = false; }, 0); });
+
+  /* ---------- the looks, drawn from the photo (stand-ins for the model's output) ---------- */
+  var W = 640, H = 800;
+  function rnd(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+  function cover(x, img, dx, dy, dw, dh, fy) {
+    var r = Math.max(dw / img.naturalWidth, dh / img.naturalHeight), sw = dw / r, sh = dh / r;
+    x.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) * (fy == null ? .4 : fy), sw, sh, dx, dy, dw, dh);
+  }
+  function rr(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+  var FD = '"Bowlby One", Inter, sans-serif', FH = 'Caveat, cursive', FS = 'Inter, sans-serif';
+  function draw(look, img) {
+    var cv = document.createElement('canvas'); cv.width = W; cv.height = H; var x = cv.getContext('2d'), R = rnd(7 + look.length);
+    LOOK[look](x, img, R); return cv;
+  }
+  var LOOK = {
+    billboard: function (x, img, R) {
+      var g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#07081c'); g.addColorStop(.6, '#1d0b33'); g.addColorStop(1, '#05040c'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+      for (var i = 0; i < 14; i++) { var bw = 40 + R() * 90, bh = 220 + R() * 360, bx = i * 48 - 20; x.fillStyle = '#0a0a16'; x.fillRect(bx, H * .72 - bh, bw, bh);
+        for (var wy = H * .72 - bh + 12; wy < H * .72 - 10; wy += 16) for (var wx = bx + 6; wx < bx + bw - 6; wx += 12) if (R() > .72) { x.fillStyle = R() > .5 ? '#ffcf6b55' : '#7fd4ff44'; x.fillRect(wx, wy, 5, 7); } }
+      var bx2 = 92, by = 150, bw2 = 456, bh2 = 330;
+      x.save(); x.shadowColor = '#ff4fd8'; x.shadowBlur = 70; x.fillStyle = '#000'; x.fillRect(bx2 - 10, by - 10, bw2 + 20, bh2 + 20); x.restore();
+      x.fillStyle = '#16161c'; x.fillRect(bx2 - 10, by - 10, bw2 + 20, bh2 + 20); cover(x, img, bx2, by, bw2, bh2);
+      var sh = x.createLinearGradient(0, by, 0, by + bh2); sh.addColorStop(0, '#ffffff22'); sh.addColorStop(.5, '#ffffff00'); x.fillStyle = sh; x.fillRect(bx2, by, bw2, bh2);
+      x.fillStyle = '#fecc15'; x.fillRect(bx2, by + bh2 - 44, 150, 44); x.fillStyle = '#0a0a0a'; x.font = '22px ' + FD; x.fillText('NEW DROP', bx2 + 14, by + bh2 - 14);
+      x.fillStyle = '#111'; x.fillRect(W / 2 - 8, by + bh2 + 10, 16, H * .72 - by - bh2 - 10);
+      var fl = x.createLinearGradient(0, H * .72, 0, H); fl.addColorStop(0, '#1a0f2a'); fl.addColorStop(1, '#040308'); x.fillStyle = fl; x.fillRect(0, H * .72, W, H * .28);
+      var gl = x.createRadialGradient(W / 2, H * .74, 10, W / 2, H * .74, 300); gl.addColorStop(0, 'rgba(255,79,216,.35)'); gl.addColorStop(1, 'rgba(255,79,216,0)'); x.fillStyle = gl; x.fillRect(0, H * .72, W, H * .28);
+      for (var k = 0; k < 9; k++) { x.fillStyle = 'rgba(255,207,107,' + (.05 + R() * .12) + ')'; x.fillRect(60 + R() * 520, H * .74 + R() * 180, 30 + R() * 90, 2); }
+      x.fillStyle = '#ff4fd822'; x.fillRect(0, H * .72, W, 3);
+    },
+    magazine: function (x, img) {
+      cover(x, img, 0, 0, W, H, .3);
+      var t = x.createLinearGradient(0, 0, 0, 260); t.addColorStop(0, 'rgba(0,0,0,.55)'); t.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = t; x.fillRect(0, 0, W, 260);
+      var b = x.createLinearGradient(0, H - 320, 0, H); b.addColorStop(0, 'rgba(0,0,0,0)'); b.addColorStop(1, 'rgba(0,0,0,.7)'); x.fillStyle = b; x.fillRect(0, H - 320, W, 320);
+      x.fillStyle = '#fecc15'; x.font = '128px ' + FD; x.textBaseline = 'top'; x.fillText('SLOOSH', 28, 26);
+      x.fillStyle = '#fff'; x.font = '600 18px ' + FS; x.fillText('ISSUE 01  ·  THE ONE PHOTO ISSUE', 32, 172);
+      x.textBaseline = 'alphabetic'; x.font = '44px ' + FD; var L2 = cur.kind === 'person' ? ['MAIN', 'CHARACTER'] : ['THE NEW', 'DROP']; x.fillText(L2[0], 32, H - 150); x.fillText(L2[1], 32, H - 104);
+      x.font = '600 20px ' + FS; x.fillStyle = '#fecc15'; x.fillText('Made in 9 seconds. 40 more looks inside.', 32, H - 64);
+      x.fillStyle = '#fff'; x.fillRect(W - 112, H - 92, 84, 56); x.fillStyle = '#000'; for (var i = 0; i < 26; i++) x.fillRect(W - 106 + i * 3, H - 86, i % 3 ? 1 : 2, 40);
+    },
+    studio: function (x, img, R) {
+      var g = x.createRadialGradient(W * .3, H * .2, 40, W / 2, H / 2, H * .8); g.addColorStop(0, '#ffe3ef'); g.addColorStop(.55, '#d8dcff'); g.addColorStop(1, '#b9c8f6'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+      x.fillStyle = '#ffffffaa'; [[90, 140, 34], [540, 210, 22], [500, 640, 40], [120, 590, 18]].forEach(function (s) { x.beginPath(); x.arc(s[0], s[1], s[2], 0, 7); x.fill(); });
+      x.fillStyle = '#eef0ff'; x.beginPath(); x.ellipse(W / 2, H * .8, 220, 46, 0, 0, 7); x.fill(); x.fillStyle = '#dfe3fb'; x.fillRect(W / 2 - 220, H * .8, 440, 80); x.beginPath(); x.ellipse(W / 2, H * .8 + 80, 220, 46, 0, 0, 7); x.fill();
+      x.fillStyle = '#f6f7ff'; x.beginPath(); x.ellipse(W / 2, H * .8, 220, 46, 0, 0, 7); x.fill();
+      x.save(); x.translate(W / 2, H * .44); x.rotate(-.06); x.shadowColor = 'rgba(60,50,120,.35)'; x.shadowBlur = 50; x.shadowOffsetY = 30; rr(x, -170, -210, 340, 425, 28); x.fillStyle = '#fff'; x.fill(); x.shadowColor = 'transparent'; x.clip(); cover(x, img, -170, -210, 340, 425); x.restore();
+    },
+    polaroid: function (x, img, R) {
+      x.fillStyle = '#b8875a'; x.fillRect(0, 0, W, H); for (var i = 0; i < 1600; i++) { x.fillStyle = R() > .5 ? '#a47447' : '#c99b6e'; x.fillRect(R() * W, R() * H, 2 + R() * 3, 2 + R() * 3); }
+      var lg = x.createLinearGradient(0, 0, W, H); lg.addColorStop(0, 'rgba(255,220,150,.35)'); lg.addColorStop(1, 'rgba(0,0,0,.25)'); x.fillStyle = lg; x.fillRect(0, 0, W, H);
+      x.save(); x.translate(W / 2, H / 2 - 10); x.rotate(.05); x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 30; x.shadowOffsetY = 14; x.fillStyle = '#fbfaf6'; x.fillRect(-230, -300, 460, 590); x.shadowColor = 'transparent';
+      cover(x, img, -206, -276, 412, 440); x.fillStyle = 'rgba(255,200,120,.12)'; x.fillRect(-206, -276, 412, 440);
+      x.fillStyle = '#2b2b2b'; x.font = '700 46px ' + FH; x.textAlign = 'center'; x.fillText(cur.kind === 'person' ? 'best day, honestly' : 'my favourite thing', 0, 232);
+      x.rotate(-.12); x.fillStyle = 'rgba(255,248,220,.75)'; x.fillRect(-70, -322, 140, 40); x.restore();
+    },
+    popart: function (x, img) {
+      var P = [['#fecc15', '#ff2e88'], ['#25d0ff', '#ff3b30'], ['#7dff6b', '#7a2cff'], ['#ff8a00', '#2f5bff']], w = W / 2, h = H / 2;
+      P.forEach(function (c, i) {
+        var X = (i % 2) * w, Y = Math.floor(i / 2) * h; x.save(); x.beginPath(); x.rect(X, Y, w, h); x.clip();
+        x.fillStyle = c[0]; x.fillRect(X, Y, w, h);
+        x.filter = 'grayscale(1) contrast(1.9) brightness(1.05)'; x.globalCompositeOperation = 'multiply'; cover(x, img, X, Y, w, h); x.filter = 'none';
+        x.globalCompositeOperation = 'screen'; x.fillStyle = c[1] + '66'; x.fillRect(X, Y, w, h); x.globalCompositeOperation = 'source-over';
+        x.fillStyle = 'rgba(0,0,0,.18)'; for (var dy = Y + 4; dy < Y + h; dy += 9) for (var dx = X + ((dy / 9) % 2 ? 4 : 0); dx < X + w; dx += 9) { x.beginPath(); x.arc(dx, dy, 1.4, 0, 7); x.fill(); }
+        x.restore();
+      });
+      x.strokeStyle = '#0a0a0a'; x.lineWidth = 8; x.strokeRect(4, 4, W - 8, H - 8); x.beginPath(); x.moveTo(W / 2, 0); x.lineTo(W / 2, H); x.moveTo(0, H / 2); x.lineTo(W, H / 2); x.stroke();
+    },
+    neon: function (x, img) {
+      x.fillStyle = '#07040f'; x.fillRect(0, 0, W, H);
+      x.save(); x.filter = 'grayscale(1) contrast(1.35) brightness(.9)'; cover(x, img, 40, 60, W - 80, H - 200, .35); x.filter = 'none';
+      x.globalCompositeOperation = 'color'; var g = x.createLinearGradient(40, 0, W - 40, 0); g.addColorStop(0, '#ff2bd6'); g.addColorStop(1, '#16e0ff'); x.fillStyle = g; x.fillRect(40, 60, W - 80, H - 200); x.restore();
+      x.save(); x.shadowColor = '#ff2bd6'; x.shadowBlur = 30; x.strokeStyle = '#ff7deb'; x.lineWidth = 6; rr(x, 40, 60, W - 80, H - 200, 24); x.stroke(); x.restore();
+      x.save(); x.shadowColor = '#16e0ff'; x.shadowBlur = 26; x.fillStyle = '#c9f7ff'; x.font = '700 76px ' + FH; x.textAlign = 'center'; x.fillText(cur.kind === 'person' ? 'main character' : cur.kind === 'product' ? 'new drop' : 'look at me', W / 2, H - 52); x.restore();
+    }
+  };
 })();
