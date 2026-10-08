@@ -127,20 +127,21 @@
     go(0);
   }
 
-  /* ---------- templates: shortest-column masonry, 1.5 screens tall, never a hole ----------
+  /* ---------- templates and gallery: shortest-column masonry, under a screen tall, never a hole ----------
      Every unique card goes in first, each into the shortest column, so the top of the grid has no repeats.
      Then repeats of the set fill whichever column is shortest until every column runs past the clip. */
-  var mas = doc.querySelector(".mas");
-  if (mas) {
+  var masAll = [].slice.call(doc.querySelectorAll(".mas"));
+  masAll.forEach(function (mas) {
     var masWrap = mas.closest(".mas-wrap") || mas.parentNode;
     var masBase = [].slice.call(mas.querySelectorAll(".mc"));
     var masKey = "";
     var masLayout = function () {
+      if (!mas.clientWidth) return; /* a hidden tab panel: lay out when it shows */
       var n = parseInt(getComputedStyle(mas).getPropertyValue("--cols"), 10) || 5;
       var key = n + ":" + mas.clientWidth + ":" + window.innerHeight;
       if (key === masKey) return;
       masKey = key;
-      var clip = parseFloat(getComputedStyle(masWrap).maxHeight) || window.innerHeight * 1.5;
+      var clip = parseFloat(getComputedStyle(masWrap).maxHeight) || window.innerHeight;
       mas.textContent = "";
       mas.classList.add("js");
       var cols = [], h = [];
@@ -154,10 +155,51 @@
         rep.setAttribute("aria-hidden", "true"); rep.tabIndex = -1;
         place(rep); i++;
       }
+      mas.dispatchEvent(new CustomEvent("mas:laid"));
     };
     masLayout();
     var masT = 0;
     window.addEventListener("resize", function () { clearTimeout(masT); masT = setTimeout(masLayout, 150); });
+    if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(masT); masT = setTimeout(masLayout, 60); }).observe(mas);
+  });
+
+  /* ---------- gallery videos: play while on screen (muted, looped), pause off screen and in the hidden tab ---------- */
+  var galV = doc.querySelector(".mas-v");
+  if (galV && "IntersectionObserver" in window) {
+    var galRM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var gio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var c = e.target, v = c.querySelector("video"); if (!v) return;
+        if (e.isIntersecting && !galRM) {
+          v.setAttribute("data-autoplay", ""); v.muted = true;
+          var pr = v.play(); if (pr && pr.then) pr.then(function () { c.setAttribute("data-playing", ""); }).catch(function () {});
+        } else { v.pause(); c.removeAttribute("data-playing"); }
+      });
+    }, { threshold: 0.35 });
+    var watch = function () { gio.disconnect(); galV.querySelectorAll(".mc").forEach(function (c) { gio.observe(c); }); };
+    galV.addEventListener("mas:laid", watch);
+    watch();
+  }
+
+  /* ---------- mini prompt: off during the first fold, then sticky at the bottom until .flow ends above the footer ---------- */
+  var pd = doc.querySelector("[data-pdock]");
+  if (pd) {
+    var pdForm = pd.querySelector("form"), pdIn = pd.querySelector("input");
+    var hero = doc.getElementById("stories");
+    if (hero && "IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) {
+        var e = es[0], off = e.isIntersecting && e.intersectionRatio > 0.4;
+        if (off && pd.contains(doc.activeElement)) return;
+        pd.classList.toggle("off", off);
+      }, { threshold: [0, 0.4, 0.6] }).observe(hero);
+    } else pd.classList.remove("off");
+    pdForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var go = pd.querySelector(".pd-go");
+      if (!pdIn.value.trim()) { pdIn.focus(); pd.classList.remove("nudge"); void pd.offsetWidth; pd.classList.add("nudge"); snd("tick"); return; }
+      go.setAttribute("data-busy", ""); snd("pop");
+      setTimeout(function () { go.removeAttribute("data-busy"); pdIn.value = ""; pdIn.blur(); }, 900);
+    });
   }
 
   /* ---------- cast reel: eight faces from the open series tab ---------- */

@@ -167,8 +167,8 @@
 /* ---------- 3. templates: masonry under a fade ---------- */
 /* 1.5 screens of templates. No height on the column box itself: a height there makes Chrome fill columns one by one and
    spill the rest off to the right, which left holes. explore.js repeats the set until every column runs past the clip. */
-.mas-wrap { --clip: 150vh; position: relative; max-height: var(--clip); overflow: hidden; }
-@supports (height: 1svh) { .mas-wrap { --clip: 150svh; } }
+.mas-wrap { --clip: 90vh; position: relative; max-height: var(--clip); overflow: hidden; }
+@supports (height: 1svh) { .mas-wrap { --clip: 90svh; } }
 .mas { --cols: 5; columns: var(--cols); column-gap: 12px;
   -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--clip) * 0.62), transparent var(--clip)); mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--clip) * 0.62), transparent var(--clip)); }
 .mas .mc { display: block; break-inside: avoid; margin-bottom: 12px; }
@@ -911,3 +911,31 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 
 .pk-squirrel svg { transform: scaleX(-1); }
 @media (max-width: 1100px) { .ag-note { display: flex; position: relative; bottom: auto; right: auto; } }
+
+/* ---------- 8. Made on Sloosh: the templates masonry again, ending in the mini prompt ----------
+   .flow wraps every section but the footer, so the sticky prompt (its last child) rides the bottom
+   of the screen and stops right above the footer, resting on the faded end of the gallery. */
+.flow { position: relative; }
+#gallery { padding-bottom: 0; }
+#gallery .mas-wrap[hidden] { display: none; }
+.mas .mc > video { pointer-events: none; }
+.pdock { position: sticky; bottom: 24px; z-index: 40; display: flex; justify-content: center; margin: -96px auto 120px; padding: 0 16px; pointer-events: none;
+  transition: opacity 240ms ease, transform 420ms var(--ease-arrive); }
+.pdock.off { opacity: 0; transform: translateY(24px); visibility: hidden; transition: opacity 200ms ease, transform 300ms ease, visibility 0s 300ms; }
+.pd-box { pointer-events: auto; display: flex; align-items: center; gap: 4px; width: min(400px, 100%); height: 52px; padding: 0 8px; border-radius: 999px;
+  background: hsl(var(--n900) / 0.84); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 12px 32px -6px hsl(var(--n950) / 0.6), inset 0 0 0 1px hsl(var(--border)); transition: width 360ms var(--ease-arrive), box-shadow 200ms ease; }
+.pd-box:focus-within { width: min(560px, 100%); box-shadow: 0 12px 32px -6px hsl(var(--n950) / 0.6), inset 0 0 0 1px hsl(var(--border-strong)); }
+.pd-box .key { flex: none; border-radius: 50%; }
+.pd-box .pd-add { background: transparent; color: hsl(var(--muted-foreground)); box-shadow: none; }
+@media (hover: hover) { .pd-box .pd-add:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); } }
+.pd-box input { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 6px; border: 0; outline: 0; background: none; color: hsl(var(--foreground)); font-family: inherit; font-size: 15px; font-weight: 500; line-height: 1; }
+.pd-box input::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.pdock.nudge .pd-box { animation: pd-nudge 360ms var(--ease-arrive); }
+@keyframes pd-nudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 60% { transform: translateX(4px); } }
+@media (max-width: 1100px) { .shell-top .pdock { bottom: calc(64px + 16px + env(safe-area-inset-bottom)); } }
+@media (max-width: 760px) {
+  .shell-side .pdock { bottom: calc(64px + 16px + env(safe-area-inset-bottom)); }
+  .pdock { margin: -88px auto 88px; }
+}
+@media (prefers-reduced-motion: reduce) { .pdock, .pd-box { transition: none; } .pdock.nudge .pd-box { animation: none; } }
