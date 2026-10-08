@@ -968,7 +968,18 @@
   function tipFlash(el) { var tw = el.closest(".dr-tw"); if (!tw) return false; tw.classList.add("show"); clearTimeout(tw._t); tw._t = setTimeout(function () { tw.classList.remove("show"); }, 2800); snd("pop"); return true; }
   var stBtn = $(".dr-st-btn");
   if (stBtn) stBtn.addEventListener("click", function () { if (run.dataset.s === "err") go(); else tipFlash(stBtn); });
-  $(".dr-more").addEventListener("click", function (e) { e.preventDefault(); if (V3 && tipFlash(e.currentTarget)) return; toast("Opens Studio with your photo, ready for more."); });
+  var more = $(".dr-more"); if (more) more.addEventListener("click", function (e) { e.preventDefault(); toast("Opens Studio with your photo, ready for more."); });
+  /* v3 Remix: a two-item menu above the button. Signed out, either item opens sign-up; signed in, Studio or Video */
+  var RX = { image: "Opens Studio, Image, with these three looks in the prompt box.", video: "Opens Video with these three looks as the first frames." };
+  function closeMenus(except) { $$(".dr-remix.open").forEach(function (m) { if (m !== except) { m.classList.remove("open"); $(".dr-rx", m).setAttribute("aria-expanded", "false"); } }); }
+  $$(".dr-remix").forEach(function (m) {
+    var b = $(".dr-rx", m);
+    b.addEventListener("click", function (e) { e.stopPropagation(); var on = !m.classList.contains("open"); closeMenus(m); m.classList.toggle("open", on); b.setAttribute("aria-expanded", String(on)); if (on) { var f = $(".dr-menu button", m); if (f) f.focus({ preventScroll: true }); } });
+    $$(".dr-menu button", m).forEach(function (it) { it.addEventListener("click", function (e) { e.stopPropagation(); closeMenus(); toast(auth === "in" ? RX[it.getAttribute("data-rx")] : "The sign-up pop-up opens here. Not built yet."); }); });
+  });
+  doc.addEventListener("click", function () { closeMenus(); });
+  doc.addEventListener("keydown", function (e) { if (e.key === "Escape") closeMenus(); });
+  var lib = $(".dr-lib"); if (lib) lib.addEventListener("click", function (e) { e.preventDefault(); toast("Opens your Library with the three looks."); });
   cards.forEach(function (c) {
     $(".dr-open", c).addEventListener("click", function () { if (c.classList.contains("on")) toast("Opens “" + $("b", c).textContent + "” in Studio. Not built yet."); });
     $(".dr-video", c).addEventListener("click", function (e) { e.stopPropagation(); toast("Opens Video with “" + $("b", c).textContent + "” as the first frame."); });

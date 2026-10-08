@@ -1411,7 +1411,7 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
    Motion: pill, headline, box, notes, then prints spring in (.dr-on); prints leave past the edges while looks show (.res).
    Below 1080px of section width the prints line up under the box. */
 .dr-v3 { --spring: cubic-bezier(0.34, 1.32, 0.64, 1); --bh: 418px;
-  container-type: inline-size; min-height: 0; padding: 40px 0 100px; overflow-x: clip; overflow-y: visible; scroll-margin-top: 61px; }
+  container-type: inline-size; min-height: 0; padding: 80px 0 100px; overflow-x: clip; overflow-y: visible; scroll-margin-top: 61px; }
 .shell-side .dr-v3 { min-height: 0; scroll-margin-top: 0; }
 /* the dot ground: even dots that shade down into black. Nothing thins them behind the content */
 .dr-v3 .dr-ground { -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%); }
@@ -1419,7 +1419,7 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 .dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 28px; }
 .dr-v3 .dr-h { margin-top: 16px; }
 .dr-v3 .dr-stage { max-width: 640px; }
-.dr-v3.res .dr-stage { max-width: 912px; }
+.dr-v3.res .dr-stage { max-width: 928px; }
 .dr-v3.res .dr-box.over { box-shadow: inset 0 0 0 2px hsl(var(--brand-accent)); }
 .dr-v3 .dr-zone { justify-content: center; padding: 40px 24px; }
 /* the bird perches on the drawn photo */
@@ -1490,23 +1490,24 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 }
 
 /* the result: one grid, your image and the three looks at the same size; the box keeps the upload box's height */
-.dr-v3 .dr-run { grid-template-columns: minmax(0, 1fr) 1px repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; column-gap: 16px; row-gap: 20px; padding: 24px; align-items: start; }
+.dr-v3 .dr-run { /* 24px either side of the divider, the same as the card edge; 16px between the looks */
+  grid-template-columns: minmax(0, 1fr) 24px 1px 24px minmax(0, 1fr) 16px minmax(0, 1fr) 16px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 0; row-gap: 20px; padding: 24px; align-items: start; }
 /* column one sits in a darker well so your photo reads apart from the looks */
 /* the card's hairline drawn over the well, so the darker column doesn't eat the edge */
 .dr-v3 .dr-box::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; box-shadow: inset 0 0 0 1px hsl(var(--border)); pointer-events: none; }
 .dr-v3 .dr-box.over::after { box-shadow: inset 0 0 0 2px hsl(var(--brand-accent)); }
-.dr-v3 .dr-well { grid-column: 1; grid-row: 1 / 4; align-self: stretch; margin: -24px -16px -24px -24px; background: hsl(var(--background)); }
+.dr-v3 .dr-well { grid-column: 1; grid-row: 1 / 4; align-self: stretch; margin: -24px -24px -24px -24px; background: hsl(var(--background)); }
 .dr-v3 .dr-col-t { grid-column: 1; grid-row: 1; align-self: center; white-space: nowrap; }
-.dr-v3 .dr-div { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin-block: -24px; background: hsl(var(--border)); }
-.dr-v3 .dr-out-h { grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
+.dr-v3 .dr-div { grid-column: 3; grid-row: 1 / 4; align-self: stretch; margin-block: -24px; background: hsl(var(--border)); }
+.dr-v3 .dr-out-h { grid-column: 5 / 10; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
 .dr-v3 .dr-out-t { font-size: 16px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
 .dr-v3 .dr-ph { grid-column: 1; grid-row: 2; border-radius: 12px; }
 .dr-v3 .dr-cards { display: contents; }
 .dr-v3 .dr-card { border-radius: 12px; }
 .dr-v3 .dr-open { border-radius: 12px; }
-.dr-v3 .dr-card:nth-child(1) { grid-column: 3; grid-row: 2; }
-.dr-v3 .dr-card:nth-child(2) { grid-column: 4; grid-row: 2; }
-.dr-v3 .dr-card:nth-child(3) { grid-column: 5; grid-row: 2; }
+.dr-v3 .dr-card:nth-child(1) { grid-column: 5; grid-row: 2; }
+.dr-v3 .dr-card:nth-child(2) { grid-column: 7; grid-row: 2; }
+.dr-v3 .dr-card:nth-child(3) { grid-column: 9; grid-row: 2; }
 .dr-v3 .dr-cap { left: 12px; right: 12px; bottom: 12px; }
 /* hover: the caption rises and Make it a video comes up under it (the CardFade pattern on the media cards) */
 .dr-v3 .dr-act { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 240ms var(--ease-arrive), opacity 200ms ease; }
@@ -1516,25 +1517,42 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 .dr-v3 .dr-card.on:hover::after, .dr-v3 .dr-card.on:focus-within::after { background: linear-gradient(0deg, hsl(var(--media-scrim) / 0.92) 0%, hsl(var(--media-scrim) / 0.6) 45%, hsl(var(--media-scrim) / 0) 75%); }
 .dr-v3 .dr-back-row { grid-column: 1; grid-row: 3; display: flex; min-width: 0; }
 .dr-v3 .dr-back { width: 100%; margin-top: 0; }
-.dr-v3 .dr-foot { grid-column: 3 / 6; grid-row: 3; flex-direction: row; align-items: center; min-height: 40px; padding-top: 0; }
+.dr-v3 .dr-foot { grid-column: 5 / 10; grid-row: 3; flex-direction: row; align-items: center; min-height: 40px; padding-top: 0; }
 .dr-v3 .dr-foot-out, .dr-v3 .dr-foot-in { flex: 1; flex-wrap: nowrap; justify-content: flex-end; gap: 12px; min-width: 0; }
-.dr-v3 .dr-saved { margin-right: auto; min-width: 0; }
+
 .dr-v3 .dr-tags { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; min-height: 0; gap: 4px; }
 .dr-v3 .dr-tags span { background: hsl(var(--media-scrim) / 0.7); color: hsl(var(--on-media)); }
 .dr-v3 .dr-count { background: hsl(var(--accent)); color: hsl(var(--foreground)); } /* DS CountPill, neutral: readable in both themes */
-/* tooltips: for what a click would open but the prototype doesn't draw */
+/* tooltips: error states only, under the button, centred */
 .dr-tw { position: relative; display: inline-flex; }
-.dr-tw::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 10; width: max-content; max-width: 260px; padding: 6px 8px; border-radius: 6px;
-  background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 12px; font-weight: 500; line-height: 1.4; text-align: left; white-space: normal;
-  opacity: 0; translate: 0 4px; pointer-events: none; transition: opacity 80ms ease, translate 120ms var(--ease-arrive); }
+.dr-tw::after { content: attr(data-tip); position: absolute; left: 50%; top: calc(100% + 8px); z-index: 10; width: max-content; max-width: 260px; padding: 6px 8px; border-radius: 6px;
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 12px; font-weight: 500; line-height: 1.4; text-align: center; white-space: normal;
+  opacity: 0; translate: -50% -4px; pointer-events: none; transition: opacity 80ms ease, translate 120ms var(--ease-arrive); }
 .dr-tw[data-tip=""]::after { display: none; }
-.dr-tw-c::after { right: auto; left: 50%; translate: -50% 4px; text-align: center; }
-.dr-tw:hover::after, .dr-tw:focus-within::after, .dr-tw.show::after { opacity: 1; translate: 0 0; }
-.dr-tw-c:hover::after, .dr-tw-c:focus-within::after, .dr-tw-c.show::after { translate: -50% 0; }
+.dr-tw:hover::after, .dr-tw:focus-within::after, .dr-tw.show::after { opacity: 1; translate: -50% 0; }
+/* signed in: a ghost link to the library; the arrow shows on hover */
+.dr-v3 .dr-lib { margin-right: auto; margin-left: -12px; padding-inline: 12px; gap: 8px; }
+.dr-v3 .dr-lib .ic16:first-child { color: hsl(158 64% 52%); }
+.dr-v3 .dr-lib .dr-arr { opacity: 0; translate: -4px 0; transition: opacity 150ms ease, translate 200ms var(--ease-arrive); }
+@media (hover: hover) { .dr-v3 .dr-lib:hover .dr-arr { opacity: 1; translate: 0 0; } }
+.dr-v3 .dr-lib:focus-visible .dr-arr { opacity: 1; translate: 0 0; }
+/* Remix: a short button; the two options open in a small menu above it */
+.dr-remix { position: relative; display: inline-flex; }
+.dr-rx .dr-chev { transition: rotate 200ms var(--ease-arrive); }
+.dr-remix.open .dr-chev { rotate: 180deg; }
+.dr-menu { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 12; display: flex; flex-direction: column; gap: 2px; min-width: 224px; padding: 6px; border-radius: 20px;
+  background: hsl(var(--popover)); box-shadow: inset 0 0 0 1px hsl(var(--border-strong)); transform-origin: 100% 100%;
+  opacity: 0; scale: 0.96; translate: 0 4px; visibility: hidden; pointer-events: none;
+  transition: opacity 120ms ease, scale 150ms var(--ease-arrive), translate 150ms var(--ease-arrive), visibility 0s linear 150ms; }
+.dr-remix.open .dr-menu { opacity: 1; scale: 1; translate: 0 0; visibility: visible; pointer-events: auto; transition: opacity 150ms ease, scale 200ms var(--ease-arrive), translate 200ms var(--ease-arrive), visibility 0s; }
+.dr-menu button { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 0; border-radius: 12px; background: transparent; font: inherit; font-size: 14px; font-weight: 500; line-height: 1.4; color: hsl(var(--foreground)); text-align: left; white-space: nowrap; cursor: pointer; transition: background-color 120ms ease; }
+.dr-menu button .ic16 { color: hsl(var(--muted-foreground)); }
+@media (hover: hover) { .dr-menu button:hover { background: hsl(var(--muted)); } }
+.dr-menu button:focus-visible { outline: none; background: hsl(var(--muted)); }
 /* error and empty-allowance states: the looks pane clears for a critter, a line and one action; Try another stays, disabled */
 .dr-state { display: none; }
 .dr-v3 .dr-run[data-s="err"] :is(.dr-out-h, .dr-cards, .dr-foot), .dr-v3 .dr-run[data-s="out"] :is(.dr-out-h, .dr-cards, .dr-foot) { display: none; }
-.dr-v3 .dr-run[data-s="err"] .dr-state, .dr-v3 .dr-run[data-s="out"] .dr-state { grid-column: 3 / 6; grid-row: 1 / 4; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; animation: dr-swap 320ms var(--ease-arrive) both; }
+.dr-v3 .dr-run[data-s="err"] .dr-state, .dr-v3 .dr-run[data-s="out"] .dr-state { grid-column: 5 / 10; grid-row: 1 / 4; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; animation: dr-swap 320ms var(--ease-arrive) both; }
 .dr-st-art { position: relative; display: grid; place-items: center; width: 96px; height: 96px; margin-bottom: 8px; }
 .dr-st-crit { line-height: 0; }
 .dr-st-ic { position: absolute; right: 0; bottom: 4px; display: none; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: hsl(var(--muted)); color: hsl(var(--foreground)); box-shadow: 0 0 0 3px hsl(var(--card)); }
@@ -1590,6 +1608,25 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
   .dr-v3:not(.dr-on) .dr-print, .dr-v3.res .dr-print { translate: none; rotate: var(--r); scale: none; }
   .dr-v3 .dr-eye, .dr-v3 .dr-h, .dr-v3 .dr-box, .dr-v3 .dr-fine > span { translate: none !important; }
   .dr-print:hover::before, .dr-print:hover::after { animation: none; }
+}
+
+/* two drawn arrows from the prints into the box: drag one in. Only where the prints lie around the box */
+.dr-hint { position: absolute; top: 132px; z-index: 1; display: none; width: 104px; height: 61px; pointer-events: none; transition: opacity 240ms ease; }
+.dr-hint-l { right: calc(100% + 20px); }
+.dr-hint-r { left: calc(100% + 20px); }
+.dr-v3.res .dr-hint { opacity: 0; }
+@container (min-width: 1200px) { .dr-v3 .dr-hint { display: block; } }
+/* phones and tablets: upload your own photo only. No sample prints (they only work as a drag-in around a desktop box) */
+@container (max-width: 1079px) { .dr-v3 .dr-scatter { display: none !important; } }
+.dr-z-tc { display: none; }
+@media (hover: none) and (pointer: coarse) { .dr-v3 .dr-z-pt { display: none; } .dr-v3 .dr-z-tc { display: block; } }
+/* phones: the footer actions share the row (or take it whole), and the Remix menu matches its button */
+@container (max-width: 640px) {
+  .dr-v3 .dr-foot-out, .dr-v3 .dr-foot-in { flex-wrap: wrap; }
+  .dr-v3 .dr-foot-out > *, .dr-v3 .dr-foot-in .dr-remix { flex: 1 1 0; }
+  .dr-v3 .dr-foot-in .dr-lib { flex-basis: 100%; margin: 0; justify-content: flex-start; padding-inline: 0; }
+  .dr-v3 .dr-rx, .dr-v3 .dr-save { width: 100%; }
+  .dr-v3 .dr-menu { left: 0; right: auto; min-width: 100%; width: max-content; transform-origin: 0 100%; }
 }
 
 /* ---------- Gemini card: a white "Special offer" pill leads; the title steps down to plain 24px so the section title stays the only big one ---------- */
