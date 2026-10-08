@@ -439,7 +439,6 @@
     var NS = "http://www.w3.org/2000/svg", logoSvg = src.querySelector("svg");
     var VB = [150, 90, 1300, 590], EYES = [{ x: 652.9, y: 287.4 }, { x: 889.4, y: 287.0 }];
     var ctx = acv.getContext("2d"), grid = null, cols = 0, rows = 0, cw = 0, chh = 0, fontPx = 0, glyph = null;
-    var INK = "#0A0A0A", PAPER = "#FFFFFF"; /* on the yellow band: black letters and eyes, white pupils */
     var GL = "SLOOSH#%&$@8", GW = "█", ripples = [], blinkUntil = 0, RIP_MS = 1100, looping = false, sleepy = false, look = { x: .95, y: 0, tx: .95, ty: 0 };
     function buildGrid() {
       var Wd = stage.clientWidth || 600, H = Wd * VB[3] / VB[2], dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -477,15 +476,15 @@
         var i = y * cols + x, t = grid[i]; if (!t) continue; var ch, col;
         if (t === 2) {
           var e = x < cols * (771 - VB[0]) / VB[2] ? 0 : 1, p = pupils[e], sh = shines[e], eyeY = cellOfVb(0, EYES[e].y).y, ex = (x + .5 - p.x) / pr, ey = (y + .5 - p.y) / prY;
-          if (blinking) { if (Math.abs(y - eyeY) > .6) continue; ch = "▀"; col = INK; }
+          if (blinking) { if (Math.abs(y - eyeY) > .6) continue; ch = "▀"; col = "#FFFFFF"; }
           else if (sleepy && y < eyeY - .5) continue;
-          else if (sleepy && Math.abs(y - (eyeY - .5)) < .6) { ch = "▄"; col = INK; }
-          else if (Math.abs(x + .5 - sh.x) < .7 && Math.abs(y + .5 - sh.y) < .6) { ch = "o"; col = INK; }
-          else if (ex * ex + ey * ey < 1) { ch = GW; col = PAPER; }
-          else { ch = GW; col = INK; }
+          else if (sleepy && Math.abs(y - (eyeY - .5)) < .6) { ch = "▄"; col = "#FFFFFF"; }
+          else if (Math.abs(x + .5 - sh.x) < .7 && Math.abs(y + .5 - sh.y) < .6) { ch = "o"; col = "#FFFFFF"; }
+          else if (ex * ex + ey * ey < 1) continue;
+          else { ch = GW; col = "#F5F5F5"; }
           ctx.fillStyle = col; ctx.fillText(ch, x * cw, y * chh);
         } else {
-          ch = GL[glyph[i] % GL.length]; ctx.fillStyle = INK; ctx.fillText(ch, x * cw, y * chh);
+          ch = GL[glyph[i] % GL.length]; ctx.fillStyle = "#FECC15"; ctx.fillText(ch, x * cw, y * chh);
           for (var r = 0; r < rings.length; r++) { var Rr = rings[r], dd = Math.abs(Math.hypot(x - Rr.x, (y - Rr.y) * ar) - Rr.rad); if (dd < 4) { ctx.globalAlpha = (1 - dd / 4) * .3 * (.35 + .65 * Rr.fade); ctx.fillStyle = "#FFFFFF"; ctx.fillText(ch, x * cw, y * chh); ctx.globalAlpha = 1; break; } }
         }
       }
