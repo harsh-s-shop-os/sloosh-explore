@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sloosh Icon Motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a rules strip up top, then one section per motion style; every icon gets a card you hover or press. Dark first, like Sloosh. */
+:root {
+  --bg: #0a0a0a; --card: #141414; --raise: #1d1d1d; --line: #262626; --line-2: #3a3a3a;
+  --fg: #fafafa; --sub: #a3a3a3; --dim: #737373;
+  --y: #fdd116; --y-ink: #fdd116; --on-y: #0a0a0a;
+  --key: #262626; --key-edge: #3f3f3f; --key-fg: #fafafa;
+  --display: "Bowlby One", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --icon-stroke: 1.75;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #f6f6f5; --card: #ffffff; --raise: #f1f1f0; --line: #e5e5e4; --line-2: #d4d4d3;
+  --fg: #0a0a0a; --sub: #525252; --dim: #737373; --y-ink: #8a6a00;
+  --key: #ffffff; --key-edge: #d4d4d4; --key-fg: #0a0a0a; color-scheme: light;
+} }
+:root[data-theme="light"] {
+  --bg: #f6f6f5; --card: #ffffff; --raise: #f1f1f0; --line: #e5e5e4; --line-2: #d4d4d3;
+  --fg: #0a0a0a; --sub: #525252; --dim: #737373; --y-ink: #8a6a00;
+  --key: #ffffff; --key-edge: #d4d4d4; --key-fg: #0a0a0a; color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 24px; padding-block: 56px 96px; display: grid; gap: 72px; }
+@media (max-width: 600px) { .wrap { padding-inline: 16px; padding-block: 32px 64px; gap: 56px; } }
+svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellipse)[stroke-width] { stroke-width: var(--icon-stroke); }
+svg { display: block; flex: none; }
+
+.top { display: grid; gap: 28px; }
+.eb { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--y-ink); }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(36px, 6vw, 60px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.lede { max-width: 62ch; color: var(--sub); font-size: 17px; margin: 0; }
+.rules { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.rules li { background: var(--card); padding: 18px 20px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.rules b { font-weight: 600; font-size: 14px; }
+.rules span { color: var(--sub); font-size: 14px; }
+
+.grp { display: grid; gap: 24px; }
+.gh { display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: start; }
+.code { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: var(--y); color: var(--on-y); font-family: var(--display); font-size: 22px; }
+.gh h2 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.gh p { margin: 2px 0 0; color: var(--sub); max-width: 64ch; }
+.playall { font: 500 13px/1 var(--sans); color: var(--fg); background: var(--raise); border: 1px solid var(--line-2); border-radius: 10px; height: 36px; padding: 0 14px; cursor: pointer; white-space: nowrap; }
+.playall:hover { border-color: var(--dim); }
+.playall:focus-visible, .cd:focus-visible, .key:focus-visible { outline: 2px solid var(--y); outline-offset: 2px; }
+@media (max-width: 600px) { .gh { grid-template-columns: auto 1fr; } .playall { grid-column: 1 / -1; justify-self: start; } }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.cd { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 14px; align-content: start; min-width: 0; cursor: default; transition: border-color 160ms ease; }
+.cd:hover { border-color: var(--line-2); }
+.stage { height: 120px; border-radius: 10px; background: var(--raise); display: grid; place-items: center; color: var(--fg); }
+.real { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lbl { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
+.mk { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; background: var(--key); border: 1px solid var(--key-edge); color: var(--key-fg); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.mk.solo { width: 36px; height: 36px; padding: 0; justify-content: center; }
+.meta { display: grid; gap: 2px; }
+.mo { margin: 0; font-weight: 500; font-size: 14px; }
+.wh { margin: 0; color: var(--dim); font-size: 13px; }
+.cd.sc .wh { color: var(--y-ink); }
+
+.three { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.key { display: inline-flex; align-items: center; gap: 8px; height: 48px; min-width: 48px; justify-content: center; padding: 0 16px; border-radius: 12px; background: var(--key); border: 1px solid var(--key-edge); color: var(--key-fg); font: 600 15px/1 var(--sans); text-decoration: none; cursor: pointer; box-shadow: 0 2px 0 var(--key-edge); transition: transform 120ms ease, box-shadow 120ms ease; }
+.key:active { transform: translateY(2px); box-shadow: 0 0 0 var(--key-edge); }
+.key.pri { background: var(--y); color: var(--on-y); border-color: #c9a300; box-shadow: 0 2px 0 #b38f00; }
+.sw .key[id] { padding: 0; width: 56px; }
+.chd { transition: transform 220ms var(--im-in); }
+.acc[aria-expanded="true"] .chd { transform: rotate(180deg); }
+footer { color: var(--dim); font-size: 13px; border-top: 1px solid var(--line); padding-top: 20px; max-width: 70ch; }
+
+/* ===================== Icon motion =====================
+   Rules (see icon-motion.js for who gets what):
+   - An icon moves only when you hover or press the thing it sits in, or when something you clicked
+     swaps it for another icon. Nothing moves on scroll or on appear. One exception: the Sparkle on
+     "Try Gemini Omni" twinkles on its own every few seconds while it's on screen.
+   - Default: the icon REDRAWS itself (each stroke draws in, one part after another).
+     Plus, minus and other plain icons never rotate.
+   - Only icons whose object has an obvious action do that action (plug plugs in, link joins,
+     camera records, lock locks, a bell would ring, a bulb would light...).
+   - Arrows nudge on hover; on press they fly out and come back in from the other side.
+   - Chevrons that open something (menus, accordions) rotate with that state.
+   - The button's own press (the keycap going down) is the button's job, not the icon's.
+   Every keyframe ends where it started, so dropping the class never jumps. */
+
+:root {
+  --im-in: cubic-bezier(0.23, 1, 0.32, 1);      /* arrive (same as --ease-arrive) */
+  --im-hop: cubic-bezier(0.34, 1.56, 0.64, 1);  /* small overshoot */
+  --im-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+svg[data-im] { overflow: visible; }
+svg[data-im] .im-a, svg[data-im] [data-p] { transform-box: view-box; }
+
+/* ---------- DRAW (default): every part redraws, one after another (paths carry pathLength="1", JS sets --i) ---------- */
+@keyframes im-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+:is(svg[data-im="plus"], svg[data-im="add"], svg[data-im="minus"], svg[data-im="sun"], svg[data-im="moon"],
+    svg[data-im="play"], svg[data-im="pause"], svg[data-im="image1"], svg[data-im="image2"], svg[data-im="imgadd"],
+    svg[data-im="folderadd"], svg[data-im="folder"], svg[data-im="tick"], svg[data-im="diamond"], svg[data-im="info"],
+    svg[data-im="home"], svg[data-im="crown"], svg[data-im="userstar"], svg[data-im="aivideo"], svg[data-im="workflow"],
+    svg[data-im="share"], svg[data-im="grid"]).im-on [data-p] {
+  stroke-dasharray: 1;
+  animation: im-draw 440ms var(--im-io) calc(var(--i, 0) * 60ms) both;
+}
+
+/* ---------- arrows: nudge on hover, fly-through on press ---------- */
+svg[data-im="chev-r"], svg[data-im="chev-l"], svg[data-im="arrow-up"] { overflow: hidden; }
+@keyframes im-nudge-r { 0% { transform: none; } 40% { transform: translateX(2.5px); } 100% { transform: none; } }
+@keyframes im-nudge-l { 0% { transform: none; } 40% { transform: translateX(-2.5px); } 100% { transform: none; } }
+@keyframes im-nudge-u { 0% { transform: none; } 40% { transform: translateY(-2.5px); } 100% { transform: none; } }
+svg[data-im="chev-r"].im-on .im-a { animation: im-nudge-r 420ms var(--im-io) both; }
+svg[data-im="chev-l"].im-on .im-a { animation: im-nudge-l 420ms var(--im-io) both; }
+svg[data-im="arrow-up"].im-on .im-a { animation: im-nudge-u 420ms var(--im-io) both; }
+@keyframes im-fly-r {
+  0% { transform: translateX(0); opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  38% { transform: translateX(16px); opacity: 0; }
+  38.1% { transform: translateX(-16px); opacity: 0; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes im-fly-l {
+  0% { transform: translateX(0); opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  38% { transform: translateX(-16px); opacity: 0; }
+  38.1% { transform: translateX(16px); opacity: 0; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+  100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes im-fly-u {
+  0% { transform: translateY(0); opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  38% { transform: translateY(-18px); opacity: 0; }
+  38.1% { transform: translateY(18px); opacity: 0; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+  100% { transform: translateY(0); opacity: 1; }
+}
+svg[data-im="chev-r"].im-fly .im-a { animation: im-fly-r 460ms both; }
+svg[data-im="chev-l"].im-fly .im-a { animation: im-fly-l 460ms both; }
+svg[data-im="arrow-up"].im-fly .im-a { animation: im-fly-u 460ms both; }
+
+/* ---------- contextual: the object does its own action ---------- */
+@keyframes im-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
+@keyframes im-turn180 { from { transform: rotate(0); } to { transform: rotate(180deg); } }
+@keyframes im-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* reload / repeat go round (a half turn; both look the same after 180°) */
+svg[data-im="reload"].im-on .im-a, svg[data-im="repeat"].im-on .im-a { transform-origin: 12px 12px; animation: im-turn180 560ms var(--im-hop) both; }
+/* clock: the hands sweep one lap */
+svg[data-im="clock"].im-on [data-p="1"] { transform-origin: 12px 12px; animation: im-spin 640ms var(--im-io) both; }
+
+/* video camera: the lens pushes out (zoom), the record dot blinks */
+@keyframes im-lens { 0% { transform: translateX(0); } 35% { transform: translateX(2.5px); } 100% { transform: translateX(0); } }
+@keyframes im-blink { 0%, 100% { opacity: 1; } 20%, 50% { opacity: 0; } 35%, 70% { opacity: 1; } }
+svg[data-im="video"].im-on [data-p="1"] { animation: im-lens 520ms var(--im-hop) both; }
+svg[data-im="video"].im-on [data-p="2"] { animation: im-blink 560ms linear both; }
+
+/* copy: the front sheet slides out of the back one */
+@keyframes im-dupe { 0% { transform: translate(0, 0); opacity: 1; } 22% { transform: translate(-5px, -5px); opacity: 0; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: translate(0, 0); opacity: 1; } }
+svg[data-im="copy"].im-on [data-p="0"] { animation: im-dupe 480ms var(--im-in) both; }
+
+/* link: the halves pull apart, then click together */
+@keyframes im-link-a { 0% { transform: none; } 35% { transform: translate(-2px, 2px); } 70% { transform: translate(0.6px, -0.6px); } 100% { transform: none; } }
+@keyframes im-link-b { 0% { transform: none; } 35% { transform: translate(2px, -2px); } 70% { transform: translate(-0.6px, 0.6px); } 100% { transform: none; } }
+svg[data-im="link"].im-on [data-p="0"] { animation: im-link-a 520ms var(--im-io) both; }
+svg[data-im="link"].im-on [data-p="1"] { animation: im-link-b 520ms var(--im-io) both; }
+
+/* sparkles twinkle: each star shrinks and turns a quarter (looks the same after 90°), the small one a beat later */
+@keyframes im-twinkle { 0% { transform: scale(1) rotate(0); } 35% { transform: scale(0.5) rotate(40deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: scale(1) rotate(90deg); } }
+svg[data-im="sparkles"].im-on [data-p="0"] { transform-origin: 15px 9px; animation: im-twinkle 560ms var(--im-in) both; }
+svg[data-im="sparkles"].im-on [data-p="1"] { transform-origin: 7px 17px; animation: im-twinkle 560ms var(--im-in) 90ms both; }
+
+/* plug: it pushes up into the socket, the cable stretches with it */
+@keyframes im-plug { 0% { transform: none; } 35% { transform: translateY(-2.5px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
+@keyframes im-cable { 0% { transform: none; } 35% { transform: scaleY(1.5); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
+svg[data-im="plug"].im-on :is([data-p="0"], [data-p="1"], [data-p="3"]) { animation: im-plug 540ms var(--im-in) both; }
+svg[data-im="plug"].im-on [data-p="2"] { transform-origin: 12px 22px; animation: im-cable 540ms var(--im-in) both; }
+
+/* flask: the test tube gets a swirl */
+@keyframes im-swirl { 0% { transform: rotate(0); } 30% { transform: rotate(16deg); } 65% { transform: rotate(-8deg); } 100% { transform: rotate(0); } }
+svg[data-im="flask"].im-on :is([data-p="1"], [data-p="3"]) { transform-origin: 14px 4px; animation: im-swirl 620ms var(--im-io) both; }
+
+/* agents (chat): the bubble leans in like it's talking, the letters write themselves */
+@keyframes im-talk { 0% { transform: none; } 40% { transform: rotate(-7deg) scale(1.06); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
+svg[data-im="aichat"].im-on [data-p="0"] { transform-origin: 3px 21px; animation: im-talk 520ms var(--im-in) both; }
+svg[data-im="aichat"].im-on [data-p="1"] { stroke-dasharray: 1; animation: im-draw 420ms var(--im-in) 80ms both; }
+
+/* docs (book): the right page lifts like it's being turned */
+@keyframes im-page { 0% { transform: scaleX(1); } 45% { transform: scaleX(0.15) skewY(-6deg); } 100% { transform: scaleX(1); } }
+svg[data-im="book"].im-on [data-p="1"] { transform-origin: 12px 12px; animation: im-page 560ms var(--im-io) both; }
+
+/* mouse click: the mouse clicks down, the click mark draws */
+@keyframes im-click { 0% { transform: none; } 25% { transform: translateY(1.2px); } 100% { transform: none; } }
+svg[data-im="mouse"].im-on :is([data-p="0"], [data-p="2"], [data-p="3"]) { animation: im-click 420ms var(--im-in) both; }
+svg[data-im="mouse"].im-on [data-p="1"] { stroke-dasharray: 1; animation: im-draw 300ms var(--im-in) 90ms both; }
+
+/* expand: the four corners push out, then settle */
+@keyframes im-out-tl { 0%, 100% { transform: none; } 40% { transform: translate(-1.6px, -1.6px); } }
+@keyframes im-out-tr { 0%, 100% { transform: none; } 40% { transform: translate(1.6px, -1.6px); } }
+@keyframes im-out-bl { 0%, 100% { transform: none; } 40% { transform: translate(-1.6px, 1.6px); } }
+@keyframes im-out-br { 0%, 100% { transform: none; } 40% { transform: translate(1.6px, 1.6px); } }
+svg[data-im="expand"].im-on :is([data-p="0"], [data-p="6"]) { animation: im-out-tl 480ms var(--im-io) both; }
+svg[data-im="expand"].im-on :is([data-p="2"], [data-p="4"]) { animation: im-out-tr 480ms var(--im-io) both; }
+svg[data-im="expand"].im-on :is([data-p="1"], [data-p="5"]) { animation: im-out-bl 480ms var(--im-io) both; }
+svg[data-im="expand"].im-on :is([data-p="3"], [data-p="7"]) { animation: im-out-br 480ms var(--im-io) both; }
+
+/* magic wand: a flick from the handle, the sparks pop one after the other */
+@keyframes im-flick { 0% { transform: rotate(0); } 30% { transform: rotate(-14deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: rotate(0); } }
+@keyframes im-spark { 0% { transform: scale(1) rotate(0); } 30% { transform: scale(0.2) rotate(0); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: scale(1) rotate(90deg); } }
+svg[data-im="wand"].im-on [data-p="0"] { transform-origin: 20.5px 21px; animation: im-flick 520ms var(--im-in) both; }
+svg[data-im="wand"] [data-p]:not([data-p="0"]) { transform-box: fill-box; transform-origin: center; }
+svg[data-im="wand"].im-on [data-p="1"] { animation: im-spark 480ms var(--im-in) 80ms both; }
+svg[data-im="wand"].im-on [data-p="2"] { animation: im-spark 480ms var(--im-in) 160ms both; }
+svg[data-im="wand"].im-on [data-p="3"] { animation: im-spark 480ms var(--im-in) 220ms both; }
+
+/* lock: the shackle lifts and clicks shut */
+@keyframes im-lift { 0% { transform: none; } 35% { transform: translateY(-2.5px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
+svg[data-im="lock"].im-on [data-p="1"] { animation: im-lift 500ms var(--im-in) both; }
+
+/* card: a swipe */
+@keyframes im-swipe { 0% { transform: none; } 35% { transform: translateX(2.5px) rotate(-5deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
+svg[data-im="card"].im-on .im-a { transform-origin: 12px 12px; animation: im-swipe 480ms var(--im-in) both; }
+
+/* ---------- swap: the incoming icon blurs and scales in ---------- */
+@keyframes im-swap { from { opacity: 0; transform: scale(0.5); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+svg[data-im].im-sw { animation: im-swap 300ms var(--im-in) both; }
+
+</style>
+</head><body>
+
+<main class="wrap">
+  <header class="top">
+    <span class="eb">Sloosh · Explore page · icon motion v2</span>
+    <h1>Every icon, and how it moves</h1>
+    <p class="lede">Hover or press any card to play its icon. The big one shows the motion up close; the small one is the size it really is on the page. On the real page, the icon plays when you hover or press the button, tab or tag it sits in.</p>
+    <ul class="rules">
+      <li><b>When in doubt, redraw</b><span>Plain icons redraw themselves. Plus and minus never rotate.</span></li>
+      <li><b>Only when you touch it</b><span>Hover, press, or a click that changes state. Nothing moves on scroll or on appear.</span></li>
+      <li><b>Contextual icons act it out</b><span>A plug plugs in, a link joins, a bell would ring, a bulb would light.</span></li>
+      <li><b>Arrows travel, chevrons turn</b><span>Arrows nudge on hover and fly out and back on press. Chevrons that open something rotate with it.</span></li>
+      <li><b>Same icon, same motion</b><span>Everywhere it appears. Different icons get different motions.</span></li>
+      <li><b>Small and quick</b><span>About 0.4 to 0.7 seconds, with a small overshoot at the end for the playful ones.</span></li>
+      <li><b>One at a time</b><span>Only the icon in the thing you hovered moves. Neighbours stay still.</span></li>
+      <li><b>The press belongs to the button</b><span>The keycap going down is the button’s job. The icon adds its own motion on top.</span></li>
+      <li><b>Touch screens</b><span>No hover there, so the motion plays on press.</span></li>
+      <li><b>Scenes keep their own timing</b><span>Icons inside the animated scenes (hero, Spacelab, Agents) follow the scene, not the pointer.</span></li>
+    </ul>
+  </header>
+<section class="grp" id="s-a">
+  <header class="gh"><span class="code">A</span><div><h2>Draw (the default)</h2><p>When in doubt, the icon redraws itself: each stroke draws in, one part after another. Plain icons like plus and minus never rotate.</p></div><button class="playall" type="button" data-sec="s-a">Play all</button></header>
+  <div class="grid"><article class="cd" data-im-host tabindex="0" aria-label="plus: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4V20M20 12H4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4V20M20 12H4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Create a space</span></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Create a space (nav, Spacelab, sidebar)</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="add: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12.001 5.00003V19.002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M19.002 12.002L4.99998 12.002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12.001 5.00003V19.002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M19.002 12.002L4.99998 12.002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Add media, more generations</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="minus: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12L4 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12L4 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Fewer generations</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="tick: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 14L8.5 17.5L19 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 14L8.5 17.5L19 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Copied, Saved, Published</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="play: Redraws from the tip.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Clone a video</span></span></div>
+  <div class="meta"><p class="mo">Redraws from the tip.</p><p class="wh">Clone a video, play stories</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="pause: Redraws, bar by bar.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7C4 5.58579 4 4.87868 4.43934 4.43934C4.87868 4 5.58579 4 7 4C8.41421 4 9.12132 4 9.56066 4.43934C10 4.87868 10 5.58579 10 7V17C10 18.4142 10 19.1213 9.56066 19.5607C9.12132 20 8.41421 20 7 20C5.58579 20 4.87868 20 4.43934 19.5607C4 19.1213 4 18.4142 4 17V7Z" stroke="currentColor" stroke-width="1.5"></path><path d="M14 7C14 5.58579 14 4.87868 14.4393 4.43934C14.8787 4 15.5858 4 17 4C18.4142 4 19.1213 4 19.5607 4.43934C20 4.87868 20 5.58579 20 7V17C20 18.4142 20 19.1213 19.5607 19.5607C19.1213 20 18.4142 20 17 20C15.5858 20 14.8787 20 14.4393 19.5607C14 19.1213 14 18.4142 14 17V7Z" stroke="currentColor" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7C4 5.58579 4 4.87868 4.43934 4.43934C4.87868 4 5.58579 4 7 4C8.41421 4 9.12132 4 9.56066 4.43934C10 4.87868 10 5.58579 10 7V17C10 18.4142 10 19.1213 9.56066 19.5607C9.12132 20 8.41421 20 7 20C5.58579 20 4.87868 20 4.43934 19.5607C4 19.1213 4 18.4142 4 17V7Z" stroke="currentColor" stroke-width="1.5"></path><path d="M14 7C14 5.58579 14 4.87868 14.4393 4.43934C14.8787 4 15.5858 4 17 4C18.4142 4 19.1213 4 19.5607 4.43934C20 4.87868 20 5.58579 20 7V17C20 18.4142 20 19.1213 19.5607 19.5607C19.1213 20 18.4142 20 17 20C15.5858 20 14.8787 20 14.4393 19.5607C14 19.1213 14 18.4142 14 17V7Z" stroke="currentColor" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws, bar by bar.</p><p class="wh">Pause stories</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="image2: Redraws: hills, sun, frame.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 16L7.46967 11.5303C7.80923 11.1908 8.26978 11 8.75 11C9.23022 11 9.69077 11.1908 10.0303 11.5303L14 15.5M15.5 17L14 15.5M21 16L18.5303 13.5303C18.1908 13.1908 17.7302 13 17.25 13C16.7698 13 16.3092 13.1908 15.9697 13.5303L14 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M15.5 8C15.7761 8 16 7.77614 16 7.5C16 7.22386 15.7761 7 15.5 7M15.5 8C15.2239 8 15 7.77614 15 7.5C15 7.22386 15.2239 7 15.5 7M15.5 8V7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M3.69797 19.7472C2.5 18.3446 2.5 16.2297 2.5 12C2.5 7.77027 2.5 5.6554 3.69797 4.25276C3.86808 4.05358 4.05358 3.86808 4.25276 3.69797C5.6554 2.5 7.77027 2.5 12 2.5C16.2297 2.5 18.3446 2.5 19.7472 3.69797C19.9464 3.86808 20.1319 4.05358 20.302 4.25276C21.5 5.6554 21.5 7.77027 21.5 12C21.5 16.2297 21.5 18.3446 20.302 19.7472C20.1319 19.9464 19.9464 20.1319 19.7472 20.302C18.3446 21.5 16.2297 21.5 12 21.5C7.77027 21.5 5.6554 21.5 4.25276 20.302C4.05358 20.1319 3.86808 19.9464 3.69797 19.7472Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 16L7.46967 11.5303C7.80923 11.1908 8.26978 11 8.75 11C9.23022 11 9.69077 11.1908 10.0303 11.5303L14 15.5M15.5 17L14 15.5M21 16L18.5303 13.5303C18.1908 13.1908 17.7302 13 17.25 13C16.7698 13 16.3092 13.1908 15.9697 13.5303L14 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M15.5 8C15.7761 8 16 7.77614 16 7.5C16 7.22386 15.7761 7 15.5 7M15.5 8C15.2239 8 15 7.77614 15 7.5C15 7.22386 15.2239 7 15.5 7M15.5 8V7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M3.69797 19.7472C2.5 18.3446 2.5 16.2297 2.5 12C2.5 7.77027 2.5 5.6554 3.69797 4.25276C3.86808 4.05358 4.05358 3.86808 4.25276 3.69797C5.6554 2.5 7.77027 2.5 12 2.5C16.2297 2.5 18.3446 2.5 19.7472 3.69797C19.9464 3.86808 20.1319 4.05358 20.302 4.25276C21.5 5.6554 21.5 7.77027 21.5 12C21.5 16.2297 21.5 18.3446 20.302 19.7472C20.1319 19.9464 19.9464 20.1319 19.7472 20.302C18.3446 21.5 16.2297 21.5 12 21.5C7.77027 21.5 5.6554 21.5 4.25276 20.302C4.05358 20.1319 3.86808 19.9464 3.69797 19.7472Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws: hills, sun, frame.</p><p class="wh">Image tabs</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="image1: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></circle><path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M5 21C9.37246 15.775 14.2741 8.88406 21.4975 13.5424" stroke="currentColor" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></circle><path d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M5 21C9.37246 15.775 14.2741 8.88406 21.4975 13.5424" stroke="currentColor" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Image mode in the prompt box</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="imgadd: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 16L7.46967 11.5303C7.80923 11.1908 8.26978 11 8.75 11C9.23022 11 9.69077 11.1908 10.0303 11.5303L14 15.5M15.5 17L14 15.5M21 16L18.5303 13.5303C18.1908 13.1908 17.7302 13 17.25 13C16.7698 13 16.3092 13.1908 15.9697 13.5303L14 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M12 2.5C7.77027 2.5 5.6554 2.5 4.25276 3.69797C4.05358 3.86808 3.86808 4.05358 3.69797 4.25276C2.5 5.6554 2.5 7.77027 2.5 12C2.5 16.2297 2.5 18.3446 3.69797 19.7472C3.86808 19.9464 4.05358 20.1319 4.25276 20.302C5.6554 21.5 7.77027 21.5 12 21.5C16.2297 21.5 18.3446 21.5 19.7472 20.302C19.9464 20.1319 20.1319 19.9464 20.302 19.7472C21.5 18.3446 21.5 16.2297 21.5 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M21.5 6H18M18 6H14.5M18 6V2.5M18 6V9.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 16L7.46967 11.5303C7.80923 11.1908 8.26978 11 8.75 11C9.23022 11 9.69077 11.1908 10.0303 11.5303L14 15.5M15.5 17L14 15.5M21 16L18.5303 13.5303C18.1908 13.1908 17.7302 13 17.25 13C16.7698 13 16.3092 13.1908 15.9697 13.5303L14 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M12 2.5C7.77027 2.5 5.6554 2.5 4.25276 3.69797C4.05358 3.86808 3.86808 4.05358 3.69797 4.25276C2.5 5.6554 2.5 7.77027 2.5 12C2.5 16.2297 2.5 18.3446 3.69797 19.7472C3.86808 19.9464 4.05358 20.1319 4.25276 20.302C5.6554 21.5 7.77027 21.5 12 21.5C16.2297 21.5 18.3446 21.5 19.7472 20.302C19.9464 20.1319 20.1319 19.9464 20.302 19.7472C21.5 18.3446 21.5 16.2297 21.5 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M21.5 6H18M18 6H14.5M18 6V2.5M18 6V9.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Create more images</span></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Create more images</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="folderadd: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C21.9796 9.05942 21.9992 10.0588 22 12" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M18 13V21M22 17H14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C21.9796 9.05942 21.9992 10.0588 22 12" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M18 13V21M22 17H14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Save assets</span></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Save assets</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="folder: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C22 9.08996 22 10.1433 22 12.25C22 15.7612 22 17.5167 21.1573 18.7779C20.7926 19.3238 20.3238 19.7926 19.7779 20.1573C18.5167 21 16.7612 21 13.25 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 7H16.75C18.8567 7 19.91 7 20.6667 7.50559C20.9943 7.72447 21.2755 8.00572 21.4944 8.33329C22 9.08996 22 10.1433 22 12.25C22 15.7612 22 17.5167 21.1573 18.7779C20.7926 19.3238 20.3238 19.7926 19.7779 20.1573C18.5167 21 16.7612 21 13.25 21H12C7.28595 21 4.92893 21 3.46447 19.5355C2 18.0711 2 15.714 2 11V7.94427C2 6.1278 2 5.21956 2.38032 4.53806C2.65142 4.05227 3.05227 3.65142 3.53806 3.38032C4.21956 3 5.1278 3 6.94427 3C8.10802 3 8.6899 3 9.19926 3.19101C10.3622 3.62712 10.8418 4.68358 11.3666 5.73313L12 7" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Assets</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="sun: Redraws: core, then rays.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws: core, then rays.</p><p class="wh">Theme switch (in dark mode)</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="moon: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Theme switch (in light mode)</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="workflow: Redraws: boxes, then the links.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4C3 2.34533 3.34533 2 5 2H9C10.6547 2 11 2.34533 11 4C11 5.65467 10.6547 6 9 6H5C3.34533 6 3 5.65467 3 4Z" stroke="currentColor" stroke-width="1.5"></path><path d="M13 13C13 11.3453 13.3453 11 15 11H19C20.6547 11 21 11.3453 21 13C21 14.6547 20.6547 15 19 15H15C13.3453 15 13 14.6547 13 13Z" stroke="currentColor" stroke-width="1.5"></path><path d="M4 20C4 18.3453 4.34533 18 6 18H10C11.6547 18 12 18.3453 12 20C12 21.6547 11.6547 22 10 22H6C4.34533 22 4 21.6547 4 20Z" stroke="currentColor" stroke-width="1.5"></path><path d="M17 11C17 10.5353 17 10.303 16.9616 10.1098C16.8038 9.31644 16.1836 8.69624 15.3902 8.53843C15.197 8.5 14.9647 8.5 14.5 8.5H9.5C9.03534 8.5 8.80302 8.5 8.60982 8.46157C7.81644 8.30376 7.19624 7.68356 7.03843 6.89018C7 6.69698 7 6.46466 7 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M17 15V16C17 17.8856 17 18.8284 16.4142 19.4142C15.8284 20 14.8856 20 13 20H12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 4C3 2.34533 3.34533 2 5 2H9C10.6547 2 11 2.34533 11 4C11 5.65467 10.6547 6 9 6H5C3.34533 6 3 5.65467 3 4Z" stroke="currentColor" stroke-width="1.5"></path><path d="M13 13C13 11.3453 13.3453 11 15 11H19C20.6547 11 21 11.3453 21 13C21 14.6547 20.6547 15 19 15H15C13.3453 15 13 14.6547 13 13Z" stroke="currentColor" stroke-width="1.5"></path><path d="M4 20C4 18.3453 4.34533 18 6 18H10C11.6547 18 12 18.3453 12 20C12 21.6547 11.6547 22 10 22H6C4.34533 22 4 21.6547 4 20Z" stroke="currentColor" stroke-width="1.5"></path><path d="M17 11C17 10.5353 17 10.303 16.9616 10.1098C16.8038 9.31644 16.1836 8.69624 15.3902 8.53843C15.197 8.5 14.9647 8.5 14.5 8.5H9.5C9.03534 8.5 8.80302 8.5 8.60982 8.46157C7.81644 8.30376 7.19624 7.68356 7.03843 6.89018C7 6.69698 7 6.46466 7 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M17 15V16C17 17.8856 17 18.8284 16.4142 19.4142C15.8284 20 14.8856 20 13 20H12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws: boxes, then the links.</p><p class="wh">Spaces</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="userstar: Redraws: person, then star.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.995 13.5663L11 13.5C10.6446 13.5097 10.3134 13.5226 10.0008 13.5379C6.3 13.7193 3.28417 16.8058 3 20.5002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><circle cx="11" cy="6.5" r="4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></circle><path d="M17.8979 15.0055L18.5578 16.2475C18.6478 16.4204 18.8878 16.5862 19.0902 16.618L20.2863 16.805C21.0513 16.925 21.2312 17.4472 20.6801 17.9624L19.7502 18.8374C19.5927 18.9856 19.5064 19.2715 19.5552 19.4761L19.8214 20.5594C20.0314 21.4168 19.5477 21.7485 18.7415 21.3004L17.6204 20.6758C17.4179 20.5629 17.0842 20.5629 16.878 20.6758L15.7569 21.3004C14.9544 21.7485 14.467 21.4133 14.677 20.5594L14.9432 19.4761C14.9919 19.2715 14.9057 18.9856 14.7482 18.8374L13.8183 17.9624C13.2709 17.4472 13.4471 16.925 14.212 16.805L15.4081 16.618C15.6069 16.5862 15.8468 16.4204 15.9368 16.2475L16.5968 15.0055C16.9567 14.3315 17.5417 14.3315 17.8979 15.0055Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.995 13.5663L11 13.5C10.6446 13.5097 10.3134 13.5226 10.0008 13.5379C6.3 13.7193 3.28417 16.8058 3 20.5002" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><circle cx="11" cy="6.5" r="4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></circle><path d="M17.8979 15.0055L18.5578 16.2475C18.6478 16.4204 18.8878 16.5862 19.0902 16.618L20.2863 16.805C21.0513 16.925 21.2312 17.4472 20.6801 17.9624L19.7502 18.8374C19.5927 18.9856 19.5064 19.2715 19.5552 19.4761L19.8214 20.5594C20.0314 21.4168 19.5477 21.7485 18.7415 21.3004L17.6204 20.6758C17.4179 20.5629 17.0842 20.5629 16.878 20.6758L15.7569 21.3004C14.9544 21.7485 14.467 21.4133 14.677 20.5594L14.9432 19.4761C14.9919 19.2715 14.9057 18.9856 14.7482 18.8374L13.8183 17.9624C13.2709 17.4472 13.4471 16.925 14.212 16.805L15.4081 16.618C15.6069 16.5862 15.8468 16.4204 15.9368 16.2475L16.5968 15.0055C16.9567 14.3315 17.5417 14.3315 17.8979 15.0055Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Start your cast</span></span></div>
+  <div class="meta"><p class="mo">Redraws: person, then star.</p><p class="wh">Start your cast</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="aivideo: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.4531 12.8948C14.3016 13.5215 13.5857 13.9644 12.1539 14.8502C10.7697 15.7064 10.0777 16.1346 9.51993 15.9625C9.28934 15.8913 9.07925 15.7562 8.90982 15.57C8.5 15.1198 8.5 14.2465 8.5 12.5C8.5 10.7535 8.5 9.88018 8.90982 9.42995C9.07925 9.24381 9.28934 9.10868 9.51993 9.03753C10.0777 8.86544 10.7697 9.29357 12.1539 10.1498C13.5857 11.0356 14.3016 11.4785 14.4531 12.1052C14.5156 12.3639 14.5156 12.6361 14.4531 12.8948Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M20.9977 11C21 11.4701 21 11.9693 21 12.5C21 16.9783 21 19.2175 19.6088 20.6088C18.2175 22 15.9783 22 11.5 22C7.02166 22 4.78249 22 3.39124 20.6088C2 19.2175 2 16.9783 2 12.5C2 8.02166 2 5.78249 3.39124 4.39124C4.78249 3 7.02166 3 11.5 3C12.0307 3 12.5299 3 13 3.00231" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M18.5 2L18.7579 2.69703C19.0961 3.61102 19.2652 4.06802 19.5986 4.40139C19.932 4.73477 20.389 4.90387 21.303 5.24208L22 5.5L21.303 5.75792C20.389 6.09613 19.932 6.26524 19.5986 6.59861C19.2652 6.93198 19.0961 7.38898 18.7579 8.30297L18.5 9L18.2421 8.30297C17.9039 7.38898 17.7348 6.93198 17.4014 6.59861C17.068 6.26524 16.611 6.09613 15.697 5.75792L15 5.5L15.697 5.24208C16.611 4.90387 17.068 4.73477 17.4014 4.40139C17.7348 4.06802 17.9039 3.61102 18.2421 2.69703L18.5 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.4531 12.8948C14.3016 13.5215 13.5857 13.9644 12.1539 14.8502C10.7697 15.7064 10.0777 16.1346 9.51993 15.9625C9.28934 15.8913 9.07925 15.7562 8.90982 15.57C8.5 15.1198 8.5 14.2465 8.5 12.5C8.5 10.7535 8.5 9.88018 8.90982 9.42995C9.07925 9.24381 9.28934 9.10868 9.51993 9.03753C10.0777 8.86544 10.7697 9.29357 12.1539 10.1498C13.5857 11.0356 14.3016 11.4785 14.4531 12.1052C14.5156 12.3639 14.5156 12.6361 14.4531 12.8948Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M20.9977 11C21 11.4701 21 11.9693 21 12.5C21 16.9783 21 19.2175 19.6088 20.6088C18.2175 22 15.9783 22 11.5 22C7.02166 22 4.78249 22 3.39124 20.6088C2 19.2175 2 16.9783 2 12.5C2 8.02166 2 5.78249 3.39124 4.39124C4.78249 3 7.02166 3 11.5 3C12.0307 3 12.5299 3 13 3.00231" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M18.5 2L18.7579 2.69703C19.0961 3.61102 19.2652 4.06802 19.5986 4.40139C19.932 4.73477 20.389 4.90387 21.303 5.24208L22 5.5L21.303 5.75792C20.389 6.09613 19.932 6.26524 19.5986 6.59861C19.2652 6.93198 19.0961 7.38898 18.7579 8.30297L18.5 9L18.2421 8.30297C17.9039 7.38898 17.7348 6.93198 17.4014 6.59861C17.068 6.26524 16.611 6.09613 15.697 5.75792L15 5.5L15.697 5.24208C16.611 4.90387 17.068 4.73477 17.4014 4.40139C17.7348 4.06802 17.9039 3.61102 18.2421 2.69703L18.5 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Video (sidebar)</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="home: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11.9896V14.5C3 17.7998 3 19.4497 4.02513 20.4749C5.05025 21.5 6.70017 21.5 10 21.5H14C17.2998 21.5 18.9497 21.5 19.9749 20.4749C21 19.4497 21 17.7998 21 14.5V11.9896C21 10.3083 21 9.46773 20.6441 8.74005C20.2882 8.01237 19.6247 7.49628 18.2976 6.46411L16.2976 4.90855C14.2331 3.30285 13.2009 2.5 12 2.5C10.7991 2.5 9.76689 3.30285 7.70242 4.90855L5.70241 6.46411C4.37533 7.49628 3.71179 8.01237 3.3559 8.74005C3 9.46773 3 10.3083 3 11.9896Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11.9896V14.5C3 17.7998 3 19.4497 4.02513 20.4749C5.05025 21.5 6.70017 21.5 10 21.5H14C17.2998 21.5 18.9497 21.5 19.9749 20.4749C21 19.4497 21 17.7998 21 14.5V11.9896C21 10.3083 21 9.46773 20.6441 8.74005C20.2882 8.01237 19.6247 7.49628 18.2976 6.46411L16.2976 4.90855C14.2331 3.30285 13.2009 2.5 12 2.5C10.7991 2.5 9.76689 3.30285 7.70242 4.90855L5.70241 6.46411C4.37533 7.49628 3.71179 8.01237 3.3559 8.74005C3 9.46773 3 10.3083 3 11.9896Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Home</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="crown: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21H19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M12.125 12.75H12M12.25 12.75C12.25 12.8881 12.1381 13 12 13C11.8619 13 11.75 12.8881 11.75 12.75C11.75 12.6119 11.8619 12.5 12 12.5C12.1381 12.5 12.25 12.6119 12.25 12.75Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.9152 7.61089L13.8078 5.38179C13.019 3.79393 12.6246 3 12 3C11.3754 3 10.981 3.79393 10.1922 5.38179L9.08483 7.61089C8.58107 8.62494 8.32919 9.13197 7.87976 9.24608C7.8485 9.25401 7.81689 9.26043 7.78503 9.26533C7.32682 9.3357 6.89919 8.96678 6.04393 8.22895C4.0124 6.47635 2.99663 5.60004 2.38034 5.94899C2.34045 5.97157 2.30213 5.99686 2.26565 6.02467C1.70197 6.45439 2.09541 7.74136 2.88229 10.3153L4.04783 14.1279C4.47098 15.5121 4.68255 16.2042 5.21787 16.6021C5.75318 17 6.47261 17 7.91147 17L16.0886 16.9999C17.5274 16.9999 18.2468 16.9999 18.7821 16.602C19.3175 16.2041 19.529 15.512 19.9522 14.1279L21.1177 10.3153C21.9046 7.74137 22.298 6.4544 21.7344 6.02468C21.6979 5.99687 21.6595 5.97158 21.6197 5.94899C21.0034 5.60006 19.9876 6.47636 17.9561 8.22896C17.1008 8.96679 16.6732 9.3357 16.215 9.26533C16.1831 9.26043 16.1515 9.25401 16.1202 9.24607C15.6708 9.13197 15.4189 8.62494 14.9152 7.61089Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21H19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M12.125 12.75H12M12.25 12.75C12.25 12.8881 12.1381 13 12 13C11.8619 13 11.75 12.8881 11.75 12.75C11.75 12.6119 11.8619 12.5 12 12.5C12.1381 12.5 12.25 12.6119 12.25 12.75Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.9152 7.61089L13.8078 5.38179C13.019 3.79393 12.6246 3 12 3C11.3754 3 10.981 3.79393 10.1922 5.38179L9.08483 7.61089C8.58107 8.62494 8.32919 9.13197 7.87976 9.24608C7.8485 9.25401 7.81689 9.26043 7.78503 9.26533C7.32682 9.3357 6.89919 8.96678 6.04393 8.22895C4.0124 6.47635 2.99663 5.60004 2.38034 5.94899C2.34045 5.97157 2.30213 5.99686 2.26565 6.02467C1.70197 6.45439 2.09541 7.74136 2.88229 10.3153L4.04783 14.1279C4.47098 15.5121 4.68255 16.2042 5.21787 16.6021C5.75318 17 6.47261 17 7.91147 17L16.0886 16.9999C17.5274 16.9999 18.2468 16.9999 18.7821 16.602C19.3175 16.2041 19.529 15.512 19.9522 14.1279L21.1177 10.3153C21.9046 7.74137 22.298 6.4544 21.7344 6.02468C21.6979 5.99687 21.6595 5.97158 21.6197 5.94899C21.0034 5.60006 19.9876 6.47636 17.9561 8.22896C17.1008 8.96679 16.6732 9.3357 16.215 9.26533C16.1831 9.26043 16.1515 9.25401 16.1202 9.24607C15.6708 9.13197 15.4189 8.62494 14.9152 7.61089Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Upgrade (sidebar)</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="info: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></circle><path d="M12 16V12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M12.125 8.25H12M12.25 8.25C12.25 8.11193 12.1381 8 12 8C11.8619 8 11.75 8.11193 11.75 8.25C11.75 8.38807 11.8619 8.5 12 8.5C12.1381 8.5 12.25 8.38807 12.25 8.25Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></circle><path d="M12 16V12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M12.125 8.25H12M12.25 8.25C12.25 8.11193 12.1381 8 12 8C11.8619 8 11.75 8.11193 11.75 8.25C11.75 8.38807 11.8619 8.5 12 8.5C12.1381 8.5 12.25 8.38807 12.25 8.25Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Prompt box info</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="diamond: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.92089 5.92089C8.15836 3.68342 9.2771 2.56468 10.5857 2.19562C11.5105 1.93479 12.4895 1.93479 13.4143 2.19562C14.7229 2.56468 15.8416 3.68342 18.0791 5.92089C20.3166 8.15836 21.4353 9.2771 21.8044 10.5857C22.0652 11.5105 22.0652 12.4895 21.8044 13.4143C21.4353 14.7229 20.3166 15.8416 18.0791 18.0791C15.8416 20.3166 14.7229 21.4353 13.4143 21.8044C12.4895 22.0652 11.5105 22.0652 10.5857 21.8044C9.2771 21.4353 8.15836 20.3166 5.92089 18.0791C3.68342 15.8416 2.56468 14.7229 2.19562 13.4143C1.93479 12.4895 1.93479 11.5105 2.19562 10.5857C2.56468 9.2771 3.68342 8.15836 5.92089 5.92089Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5.92089 5.92089C8.15836 3.68342 9.2771 2.56468 10.5857 2.19562C11.5105 1.93479 12.4895 1.93479 13.4143 2.19562C14.7229 2.56468 15.8416 3.68342 18.0791 5.92089C20.3166 8.15836 21.4353 9.2771 21.8044 10.5857C22.0652 11.5105 22.0652 12.4895 21.8044 13.4143C21.4353 14.7229 20.3166 15.8416 18.0791 18.0791C15.8416 20.3166 14.7229 21.4353 13.4143 21.8044C12.4895 22.0652 11.5105 22.0652 10.5857 21.8044C9.2771 21.4353 8.15836 20.3166 5.92089 18.0791C3.68342 15.8416 2.56468 14.7229 2.19562 13.4143C1.93479 12.4895 1.93479 11.5105 2.19562 10.5857C2.56468 9.2771 3.68342 8.15836 5.92089 5.92089Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Resolution chip</p></div>
+</article>
+<article class="cd sc" data-im-host tabindex="0" aria-label="share: Redraws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 6.5C21 8.15685 19.6569 9.5 18 9.5C16.3431 9.5 15 8.15685 15 6.5C15 4.84315 16.3431 3.5 18 3.5C19.6569 3.5 21 4.84315 21 6.5Z" stroke="currentColor" stroke-width="1.5"></path><path d="M9 12C9 13.6569 7.65685 15 6 15C4.34315 15 3 13.6569 3 12C3 10.3431 4.34315 9 6 9C7.65685 9 9 10.3431 9 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M21 17.5C21 19.1569 19.6569 20.5 18 20.5C16.3431 20.5 15 19.1569 15 17.5C15 15.8431 16.3431 14.5 18 14.5C19.6569 14.5 21 15.8431 21 17.5Z" stroke="currentColor" stroke-width="1.5"></path><path d="M8.72852 10.7495L15.2285 7.75M8.72852 13.25L15.2285 16.2495" stroke="currentColor" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 6.5C21 8.15685 19.6569 9.5 18 9.5C16.3431 9.5 15 8.15685 15 6.5C15 4.84315 16.3431 3.5 18 3.5C19.6569 3.5 21 4.84315 21 6.5Z" stroke="currentColor" stroke-width="1.5"></path><path d="M9 12C9 13.6569 7.65685 15 6 15C4.34315 15 3 13.6569 3 12C3 10.3431 4.34315 9 6 9C7.65685 9 9 10.3431 9 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M21 17.5C21 19.1569 19.6569 20.5 18 20.5C16.3431 20.5 15 19.1569 15 17.5C15 15.8431 16.3431 14.5 18 14.5C19.6569 14.5 21 15.8431 21 17.5Z" stroke="currentColor" stroke-width="1.5"></path><path d="M8.72852 10.7495L15.2285 7.75M8.72852 13.25L15.2285 16.2495" stroke="currentColor" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws.</p><p class="wh">Spacelab scene only, ready for other pages</p></div>
+</article>
+<article class="cd sc" data-im-host tabindex="0" aria-label="grid: Redraws, tile by tile.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.88884 9.66294C4.39329 10 5.09552 10 6.49998 10C7.90445 10 8.60668 10 9.11113 9.66294C9.32951 9.51702 9.51701 9.32952 9.66292 9.11114C9.99998 8.60669 9.99998 7.90446 9.99998 6.5C9.99998 5.09554 9.99998 4.39331 9.66292 3.88886C9.51701 3.67048 9.32951 3.48298 9.11113 3.33706C8.60668 3 7.90445 3 6.49998 3C5.09552 3 4.39329 3 3.88884 3.33706C3.67046 3.48298 3.48296 3.67048 3.33705 3.88886C2.99998 4.39331 2.99998 5.09554 2.99998 6.5C2.99998 7.90446 2.99998 8.60669 3.33705 9.11114C3.48296 9.32952 3.67046 9.51702 3.88884 9.66294Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.8888 9.66294C15.3933 10 16.0955 10 17.5 10C18.9044 10 19.6067 10 20.1111 9.66294C20.3295 9.51702 20.517 9.32952 20.6629 9.11114C21 8.60669 21 7.90446 21 6.5C21 5.09554 21 4.39331 20.6629 3.88886C20.517 3.67048 20.3295 3.48298 20.1111 3.33706C19.6067 3 18.9044 3 17.5 3C16.0955 3 15.3933 3 14.8888 3.33706C14.6705 3.48298 14.483 3.67048 14.337 3.88886C14 4.39331 14 5.09554 14 6.5C14 7.90446 14 8.60669 14.337 9.11114C14.483 9.32952 14.6705 9.51702 14.8888 9.66294Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M3.88884 20.6629C4.39329 21 5.09552 21 6.49998 21C7.90445 21 8.60668 21 9.11113 20.6629C9.32951 20.517 9.51701 20.3295 9.66292 20.1111C9.99998 19.6067 9.99998 18.9045 9.99998 17.5C9.99998 16.0955 9.99998 15.3933 9.66292 14.8889C9.51701 14.6705 9.32951 14.483 9.11113 14.3371C8.60668 14 7.90445 14 6.49998 14C5.09552 14 4.39329 14 3.88884 14.3371C3.67046 14.483 3.48296 14.6705 3.33705 14.8889C2.99998 15.3933 2.99998 16.0955 2.99998 17.5C2.99998 18.9045 2.99998 19.6067 3.33705 20.1111C3.48296 20.3295 3.67046 20.517 3.88884 20.6629Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.8888 20.6629C15.3933 21 16.0955 21 17.5 21C18.9044 21 19.6067 21 20.1111 20.6629C20.3295 20.517 20.517 20.3295 20.6629 20.1111C21 19.6067 21 18.9045 21 17.5C21 16.0955 21 15.3933 20.6629 14.8889C20.517 14.6705 20.3295 14.483 20.1111 14.3371C19.6067 14 18.9044 14 17.5 14C16.0955 14 15.3933 14 14.8888 14.3371C14.6705 14.483 14.483 14.6705 14.337 14.8889C14 15.3933 14 16.0955 14 17.5C14 18.9045 14 19.6067 14.337 20.1111C14.483 20.3295 14.6705 20.517 14.8888 20.6629Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.88884 9.66294C4.39329 10 5.09552 10 6.49998 10C7.90445 10 8.60668 10 9.11113 9.66294C9.32951 9.51702 9.51701 9.32952 9.66292 9.11114C9.99998 8.60669 9.99998 7.90446 9.99998 6.5C9.99998 5.09554 9.99998 4.39331 9.66292 3.88886C9.51701 3.67048 9.32951 3.48298 9.11113 3.33706C8.60668 3 7.90445 3 6.49998 3C5.09552 3 4.39329 3 3.88884 3.33706C3.67046 3.48298 3.48296 3.67048 3.33705 3.88886C2.99998 4.39331 2.99998 5.09554 2.99998 6.5C2.99998 7.90446 2.99998 8.60669 3.33705 9.11114C3.48296 9.32952 3.67046 9.51702 3.88884 9.66294Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.8888 9.66294C15.3933 10 16.0955 10 17.5 10C18.9044 10 19.6067 10 20.1111 9.66294C20.3295 9.51702 20.517 9.32952 20.6629 9.11114C21 8.60669 21 7.90446 21 6.5C21 5.09554 21 4.39331 20.6629 3.88886C20.517 3.67048 20.3295 3.48298 20.1111 3.33706C19.6067 3 18.9044 3 17.5 3C16.0955 3 15.3933 3 14.8888 3.33706C14.6705 3.48298 14.483 3.67048 14.337 3.88886C14 4.39331 14 5.09554 14 6.5C14 7.90446 14 8.60669 14.337 9.11114C14.483 9.32952 14.6705 9.51702 14.8888 9.66294Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M3.88884 20.6629C4.39329 21 5.09552 21 6.49998 21C7.90445 21 8.60668 21 9.11113 20.6629C9.32951 20.517 9.51701 20.3295 9.66292 20.1111C9.99998 19.6067 9.99998 18.9045 9.99998 17.5C9.99998 16.0955 9.99998 15.3933 9.66292 14.8889C9.51701 14.6705 9.32951 14.483 9.11113 14.3371C8.60668 14 7.90445 14 6.49998 14C5.09552 14 4.39329 14 3.88884 14.3371C3.67046 14.483 3.48296 14.6705 3.33705 14.8889C2.99998 15.3933 2.99998 16.0955 2.99998 17.5C2.99998 18.9045 2.99998 19.6067 3.33705 20.1111C3.48296 20.3295 3.67046 20.517 3.88884 20.6629Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.8888 20.6629C15.3933 21 16.0955 21 17.5 21C18.9044 21 19.6067 21 20.1111 20.6629C20.3295 20.517 20.517 20.3295 20.6629 20.1111C21 19.6067 21 18.9045 21 17.5C21 16.0955 21 15.3933 20.6629 14.8889C20.517 14.6705 20.3295 14.483 20.1111 14.3371C19.6067 14 18.9044 14 17.5 14C16.0955 14 15.3933 14 14.8888 14.3371C14.6705 14.483 14.483 14.6705 14.337 14.8889C14 15.3933 14 16.0955 14 17.5C14 18.9045 14 19.6067 14.337 20.1111C14.483 20.3295 14.6705 20.517 14.8888 20.6629Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Redraws, tile by tile.</p><p class="wh">Spacelab scene only, ready for other pages</p></div>
+</article></div>
+</section>
+<section class="grp" id="s-h">
+  <header class="gh"><span class="code">H</span><div><h2>Arrows</h2><p>Hover nudges the arrow the way it points. Press sends it out of view and back in from the other side. Try both.</p></div><button class="playall" type="button" data-sec="s-h">Play all</button></header>
+  <div class="grid"><article class="cd" data-im-host tabindex="0" aria-label="chev-r: Hover: nudges right. Press: flies out right, back in from the left.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><span>All models</span><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Hover: nudges right. Press: flies out right, back in from the left.</p><p class="wh">Next story, Browse all, All models, All Seedance films</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="chev-l: Hover: nudges left. Press: flies out left, back in from the right.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Hover: nudges left. Press: flies out left, back in from the right.</p><p class="wh">Previous story, Try another image</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="arrow-up: Hover: nudges up. Press: shoots up, back in from below.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5.5V19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M18 11C18 11 13.5811 5.00001 12 5C10.4188 4.99999 6 11 6 11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5.5V19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M18 11C18 11 13.5811 5.00001 12 5C10.4188 4.99999 6 11 6 11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Make it</span></span></div>
+  <div class="meta"><p class="mo">Hover: nudges up. Press: shoots up, back in from below.</p><p class="wh">Send in the prompt box</p></div>
+</article></div>
+</section>
+<section class="grp" id="s-d">
+  <header class="gh"><span class="code">D</span><div><h2>Contextual</h2><p>Only icons whose object has an obvious action do that action. A bell would ring, a bulb would light, volume waves would pulse.</p></div><button class="playall" type="button" data-sec="s-d">Play all</button></header>
+  <div class="grid"><article class="cd" data-im-host tabindex="0" aria-label="plug: Pushes up into the socket, the cable stretches.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5 2V6M8.5 6V2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M6.00446 7.61331C5.93719 6.74273 6.63957 6 7.53014 6H16.4699C17.3604 6 18.0628 6.74273 17.9955 7.61331L17.8117 9.99197C17.6796 11.7019 17.1011 13.3498 16.132 14.7773L15.5312 15.6622C14.9638 16.4979 14.0077 17 12.9838 17H11.0162C9.99228 17 9.03617 16.4979 8.46881 15.6622L7.86803 14.7773C6.89885 13.3498 6.32041 11.7019 6.18827 9.99197L6.00446 7.61331Z" stroke="currentColor" stroke-width="1.5"></path><path d="M12 17V22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M11 9H13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5 2V6M8.5 6V2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M6.00446 7.61331C5.93719 6.74273 6.63957 6 7.53014 6H16.4699C17.3604 6 18.0628 6.74273 17.9955 7.61331L17.8117 9.99197C17.6796 11.7019 17.1011 13.3498 16.132 14.7773L15.5312 15.6622C14.9638 16.4979 14.0077 17 12.9838 17H11.0162C9.99228 17 9.03617 16.4979 8.46881 15.6622L7.86803 14.7773C6.89885 13.3498 6.32041 11.7019 6.18827 9.99197L6.00446 7.61331Z" stroke="currentColor" stroke-width="1.5"></path><path d="M12 17V22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M11 9H13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Pushes up into the socket, the cable stretches.</p><p class="wh">MCP tag</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="link: Pulls apart, then clicks together.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.14339 10.691L9.35031 10.4841C11.329 8.50532 14.5372 8.50532 16.5159 10.4841C18.4947 12.4628 18.4947 15.671 16.5159 17.6497L13.6497 20.5159C11.671 22.4947 8.46279 22.4947 6.48405 20.5159C4.50532 18.5372 4.50532 15.329 6.48405 13.3503L6.9484 12.886" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M17.0516 11.114L17.5159 10.6497C19.4947 8.67095 19.4947 5.46279 17.5159 3.48405C15.5372 1.50532 12.329 1.50532 10.3503 3.48405L7.48405 6.35031C5.50532 8.32904 5.50532 11.5372 7.48405 13.5159C9.46279 15.4947 12.671 15.4947 14.6497 13.5159L14.8566 13.309" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.14339 10.691L9.35031 10.4841C11.329 8.50532 14.5372 8.50532 16.5159 10.4841C18.4947 12.4628 18.4947 15.671 16.5159 17.6497L13.6497 20.5159C11.671 22.4947 8.46279 22.4947 6.48405 20.5159C4.50532 18.5372 4.50532 15.329 6.48405 13.3503L6.9484 12.886" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M17.0516 11.114L17.5159 10.6497C19.4947 8.67095 19.4947 5.46279 17.5159 3.48405C15.5372 1.50532 12.329 1.50532 10.3503 3.48405L7.48405 6.35031C5.50532 8.32904 5.50532 11.5372 7.48405 13.5159C9.46279 15.4947 12.671 15.4947 14.6497 13.5159L14.8566 13.309" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg><span>Connect your agent</span></span></div>
+  <div class="meta"><p class="mo">Pulls apart, then clicks together.</p><p class="wh">Connect your agent</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="video: The lens pushes out, the record dot blinks.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 11C2 7.70017 2 6.05025 3.02513 5.02513C4.05025 4 5.70017 4 9 4H10C13.2998 4 14.9497 4 15.9749 5.02513C17 6.05025 17 7.70017 17 11V13C17 16.2998 17 17.9497 15.9749 18.9749C14.9497 20 13.2998 20 10 20H9C5.70017 20 4.05025 20 3.02513 18.9749C2 17.9497 2 16.2998 2 13V11Z" stroke="currentColor" stroke-width="1.5"></path><path d="M17 8.90585L17.1259 8.80196C19.2417 7.05623 20.2996 6.18336 21.1498 6.60482C22 7.02628 22 8.42355 22 11.2181V12.7819C22 15.5765 22 16.9737 21.1498 17.3952C20.2996 17.8166 19.2417 16.9438 17.1259 15.198L17 15.0941" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><circle cx="11.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.5"></circle></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 11C2 7.70017 2 6.05025 3.02513 5.02513C4.05025 4 5.70017 4 9 4H10C13.2998 4 14.9497 4 15.9749 5.02513C17 6.05025 17 7.70017 17 11V13C17 16.2998 17 17.9497 15.9749 18.9749C14.9497 20 13.2998 20 10 20H9C5.70017 20 4.05025 20 3.02513 18.9749C2 17.9497 2 16.2998 2 13V11Z" stroke="currentColor" stroke-width="1.5"></path><path d="M17 8.90585L17.1259 8.80196C19.2417 7.05623 20.2996 6.18336 21.1498 6.60482C22 7.02628 22 8.42355 22 11.2181V12.7819C22 15.5765 22 16.9737 21.1498 17.3952C20.2996 17.8166 19.2417 16.9438 17.1259 15.198L17 15.0941" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><circle cx="11.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.5"></circle></svg><span>Make it a video</span></span></div>
+  <div class="meta"><p class="mo">The lens pushes out, the record dot blinks.</p><p class="wh">Make it a video, Make your ad, Video tabs</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="copy: The front sheet slides out of the back one.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.5 14.5C7.5 11.2002 7.5 9.55025 8.52513 8.52513C9.55025 7.5 11.2002 7.5 14.5 7.5C17.7998 7.5 19.4497 7.5 20.4749 8.52513C21.5 9.55025 21.5 11.2002 21.5 14.5C21.5 17.7998 21.5 19.4497 20.4749 20.4749C19.4497 21.5 17.7998 21.5 14.5 21.5C11.2002 21.5 9.55025 21.5 8.52513 20.4749C7.5 19.4497 7.5 17.7998 7.5 14.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.5 16.5C6.10355 16.5 5.40533 16.5 4.84402 16.3036C3.83866 15.9518 3.0482 15.1613 2.69641 14.156C2.5 13.5947 2.5 12.8964 2.5 11.5V9.5C2.5 6.20017 2.5 4.55025 3.52513 3.52513C4.55025 2.5 6.20017 2.5 9.5 2.5H11.5C12.8964 2.5 13.5947 2.5 14.156 2.69641C15.1613 3.0482 15.9518 3.83866 16.3036 4.84402C16.5 5.40533 16.5 6.10355 16.5 7.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.5 14.5C7.5 11.2002 7.5 9.55025 8.52513 8.52513C9.55025 7.5 11.2002 7.5 14.5 7.5C17.7998 7.5 19.4497 7.5 20.4749 8.52513C21.5 9.55025 21.5 11.2002 21.5 14.5C21.5 17.7998 21.5 19.4497 20.4749 20.4749C19.4497 21.5 17.7998 21.5 14.5 21.5C11.2002 21.5 9.55025 21.5 8.52513 20.4749C7.5 19.4497 7.5 17.7998 7.5 14.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.5 16.5C6.10355 16.5 5.40533 16.5 4.84402 16.3036C3.83866 15.9518 3.0482 15.1613 2.69641 14.156C2.5 13.5947 2.5 12.8964 2.5 11.5V9.5C2.5 6.20017 2.5 4.55025 3.52513 3.52513C4.55025 2.5 6.20017 2.5 9.5 2.5H11.5C12.8964 2.5 13.5947 2.5 14.156 2.69641C15.1613 3.0482 15.9518 3.83866 16.3036 4.84402C16.5 5.40533 16.5 6.10355 16.5 7.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The front sheet slides out of the back one.</p><p class="wh">Copy the server address</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="sparkles: Twinkles.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 2L15.5387 4.39157C15.9957 6.42015 17.5798 8.00431 19.6084 8.46127L22 9L19.6084 9.53873C17.5798 9.99569 15.9957 11.5798 15.5387 13.6084L15 16L14.4613 13.6084C14.0043 11.5798 12.4202 9.99569 10.3916 9.53873L8 9L10.3916 8.46127C12.4201 8.00431 14.0043 6.42015 14.4613 4.39158L15 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7 12L7.38481 13.7083C7.71121 15.1572 8.84275 16.2888 10.2917 16.6152L12 17L10.2917 17.3848C8.84275 17.7112 7.71121 18.8427 7.38481 20.2917L7 22L6.61519 20.2917C6.28879 18.8427 5.15725 17.7112 3.70827 17.3848L2 17L3.70827 16.6152C5.15725 16.2888 6.28879 15.1573 6.61519 13.7083L7 12Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 2L15.5387 4.39157C15.9957 6.42015 17.5798 8.00431 19.6084 8.46127L22 9L19.6084 9.53873C17.5798 9.99569 15.9957 11.5798 15.5387 13.6084L15 16L14.4613 13.6084C14.0043 11.5798 12.4202 9.99569 10.3916 9.53873L8 9L10.3916 8.46127C12.4201 8.00431 14.0043 6.42015 14.4613 4.39158L15 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7 12L7.38481 13.7083C7.71121 15.1572 8.84275 16.2888 10.2917 16.6152L12 17L10.2917 17.3848C8.84275 17.7112 7.71121 18.8427 7.38481 20.2917L7 22L6.61519 20.2917C6.28879 18.8427 5.15725 17.7112 3.70827 17.3848L2 17L3.70827 16.6152C5.15725 16.2888 6.28879 15.1573 6.61519 13.7083L7 12Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Try Seedance 2.5</span></span></div>
+  <div class="meta"><p class="mo">Twinkles.</p><p class="wh">Try Seedance, Studio, Models</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="aichat: The bubble leans in like it’s talking, the letters write.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.1706 20.8905C18.3536 20.6125 21.6856 17.2332 21.9598 12.9909C22.0134 12.1607 22.0134 11.3009 21.9598 10.4707C21.6856 6.22838 18.3536 2.84913 14.1706 2.57107C12.7435 2.47621 11.2536 2.47641 9.8294 2.57107C5.64639 2.84913 2.31441 6.22838 2.04024 10.4707C1.98659 11.3009 1.98659 12.1607 2.04024 12.9909C2.1401 14.536 2.82343 15.9666 3.62791 17.1746C4.09501 18.0203 3.78674 19.0758 3.30021 19.9978C2.94941 20.6626 2.77401 20.995 2.91484 21.2351C3.05568 21.4752 3.37026 21.4829 3.99943 21.4982C5.24367 21.5285 6.08268 21.1757 6.74868 20.6846C7.1264 20.4061 7.31527 20.2668 7.44544 20.2508C7.5756 20.2348 7.83177 20.3403 8.34401 20.5513C8.8044 20.7409 9.33896 20.8579 9.8294 20.8905C11.2536 20.9852 12.7435 20.9854 14.1706 20.8905Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.5 15L9.34189 9.47434C9.43631 9.19107 9.7014 9 10 9C10.2986 9 10.5637 9.19107 10.6581 9.47434L12.5 15M15.5 9V15M8.5 13H11.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.1706 20.8905C18.3536 20.6125 21.6856 17.2332 21.9598 12.9909C22.0134 12.1607 22.0134 11.3009 21.9598 10.4707C21.6856 6.22838 18.3536 2.84913 14.1706 2.57107C12.7435 2.47621 11.2536 2.47641 9.8294 2.57107C5.64639 2.84913 2.31441 6.22838 2.04024 10.4707C1.98659 11.3009 1.98659 12.1607 2.04024 12.9909C2.1401 14.536 2.82343 15.9666 3.62791 17.1746C4.09501 18.0203 3.78674 19.0758 3.30021 19.9978C2.94941 20.6626 2.77401 20.995 2.91484 21.2351C3.05568 21.4752 3.37026 21.4829 3.99943 21.4982C5.24367 21.5285 6.08268 21.1757 6.74868 20.6846C7.1264 20.4061 7.31527 20.2668 7.44544 20.2508C7.5756 20.2348 7.83177 20.3403 8.34401 20.5513C8.8044 20.7409 9.33896 20.8579 9.8294 20.8905C11.2536 20.9852 12.7435 20.9854 14.1706 20.8905Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.5 15L9.34189 9.47434C9.43631 9.19107 9.7014 9 10 9C10.2986 9 10.5637 9.19107 10.6581 9.47434L12.5 15M15.5 9V15M8.5 13H11.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The bubble leans in like it’s talking, the letters write.</p><p class="wh">Agents</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="wand: A flick from the handle, the sparks pop.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.9258 12.7775L11.7775 10.6292C11.4847 10.3364 11.3383 10.19 11.1803 10.1117C10.8798 9.96277 10.527 9.96277 10.2264 10.1117C10.0685 10.19 9.92207 10.3364 9.62923 10.6292C9.33638 10.9221 9.18996 11.0685 9.11169 11.2264C8.96277 11.527 8.96277 11.8798 9.11169 12.1803C9.18996 12.3383 9.33638 12.4847 9.62923 12.7775L11.7775 14.9258M13.9258 12.7775L20.3708 19.2225C20.6636 19.5153 20.81 19.6617 20.8883 19.8197C21.0372 20.1202 21.0372 20.473 20.8883 20.7736C20.81 20.9315 20.6636 21.0779 20.3708 21.3708C20.0779 21.6636 19.9315 21.81 19.7736 21.8883C19.473 22.0372 19.1202 22.0372 18.8197 21.8883C18.6617 21.81 18.5153 21.6636 18.2225 21.3708L11.7775 14.9258M13.9258 12.7775L11.7775 14.9258" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M17 2L17.2948 2.7966C17.6813 3.84117 17.8746 4.36345 18.2556 4.74445C18.6366 5.12545 19.1588 5.31871 20.2034 5.70523L21 6L20.2034 6.29477C19.1588 6.68129 18.6366 6.87456 18.2556 7.25555C17.8746 7.63655 17.6813 8.15883 17.2948 9.2034L17 10L16.7052 9.2034C16.3187 8.15884 16.1254 7.63655 15.7444 7.25555C15.3634 6.87455 14.8412 6.68129 13.7966 6.29477L13 6L13.7966 5.70523C14.8412 5.31871 15.3634 5.12545 15.7444 4.74445C16.1254 4.36345 16.3187 3.84117 16.7052 2.7966L17 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M6 4L6.22108 4.59745C6.51097 5.38087 6.65592 5.77259 6.94167 6.05834C7.22741 6.34408 7.61913 6.48903 8.40255 6.77892L9 7L8.40255 7.22108C7.61913 7.51097 7.22741 7.65592 6.94166 7.94167C6.65592 8.22741 6.51097 8.61913 6.22108 9.40255L6 10L5.77892 9.40255C5.48903 8.61913 5.34408 8.22741 5.05833 7.94167C4.77259 7.65592 4.38087 7.51097 3.59745 7.22108L3 7L3.59745 6.77892C4.38087 6.48903 4.77259 6.34408 5.05833 6.05833C5.34408 5.77259 5.48903 5.38087 5.77892 4.59745L6 4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.9258 12.7775L11.7775 10.6292C11.4847 10.3364 11.3383 10.19 11.1803 10.1117C10.8798 9.96277 10.527 9.96277 10.2264 10.1117C10.0685 10.19 9.92207 10.3364 9.62923 10.6292C9.33638 10.9221 9.18996 11.0685 9.11169 11.2264C8.96277 11.527 8.96277 11.8798 9.11169 12.1803C9.18996 12.3383 9.33638 12.4847 9.62923 12.7775L11.7775 14.9258M13.9258 12.7775L20.3708 19.2225C20.6636 19.5153 20.81 19.6617 20.8883 19.8197C21.0372 20.1202 21.0372 20.473 20.8883 20.7736C20.81 20.9315 20.6636 21.0779 20.3708 21.3708C20.0779 21.6636 19.9315 21.81 19.7736 21.8883C19.473 22.0372 19.1202 22.0372 18.8197 21.8883C18.6617 21.81 18.5153 21.6636 18.2225 21.3708L11.7775 14.9258M13.9258 12.7775L11.7775 14.9258" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M17 2L17.2948 2.7966C17.6813 3.84117 17.8746 4.36345 18.2556 4.74445C18.6366 5.12545 19.1588 5.31871 20.2034 5.70523L21 6L20.2034 6.29477C19.1588 6.68129 18.6366 6.87456 18.2556 7.25555C17.8746 7.63655 17.6813 8.15883 17.2948 9.2034L17 10L16.7052 9.2034C16.3187 8.15884 16.1254 7.63655 15.7444 7.25555C15.3634 6.87455 14.8412 6.68129 13.7966 6.29477L13 6L13.7966 5.70523C14.8412 5.31871 15.3634 5.12545 15.7444 4.74445C16.1254 4.36345 16.3187 3.84117 16.7052 2.7966L17 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M6 4L6.22108 4.59745C6.51097 5.38087 6.65592 5.77259 6.94167 6.05834C7.22741 6.34408 7.61913 6.48903 8.40255 6.77892L9 7L8.40255 7.22108C7.61913 7.51097 7.22741 7.65592 6.94166 7.94167C6.65592 8.22741 6.51097 8.61913 6.22108 9.40255L6 10L5.77892 9.40255C5.48903 8.61913 5.34408 8.22741 5.05833 7.94167C4.77259 7.65592 4.38087 7.51097 3.59745 7.22108L3 7L3.59745 6.77892C4.38087 6.48903 4.77259 6.34408 5.05833 6.05833C5.34408 5.77259 5.48903 5.38087 5.77892 4.59745L6 4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">A flick from the handle, the sparks pop.</p><p class="wh">Enhance chip in the prompt box</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="flask: The test tube gets a swirl.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9L11 9M20 9L17 9" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M17.0002 4V14.7857C17.0002 16.5609 15.6571 18 14.0002 18C12.3433 18 11.0002 16.5609 11.0002 14.7857V4" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M5.0002 3V13C5.0002 16.7712 5.0002 18.6569 6.17177 19.8284C7.34334 21 9.22896 21 13.0002 21H21.0002" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M10.0002 4L18.0002 4" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9L11 9M20 9L17 9" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M17.0002 4V14.7857C17.0002 16.5609 15.6571 18 14.0002 18C12.3433 18 11.0002 16.5609 11.0002 14.7857V4" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M5.0002 3V13C5.0002 16.7712 5.0002 18.6569 6.17177 19.8284C7.34334 21 9.22896 21 13.0002 21H21.0002" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M10.0002 4L18.0002 4" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The test tube gets a swirl.</p><p class="wh">Spacelab tag</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="lock: The shackle lifts and clicks shut.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 14.5V17.5M13 14.5C13 15.0523 12.5523 15.5 12 15.5C11.4477 15.5 11 15.0523 11 14.5C11 13.9477 11.4477 13.5 12 13.5C12.5523 13.5 13 13.9477 13 14.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16.5 9V6.5C16.5 4.01472 14.4853 2 12 2C9.51471 2 7.49999 4.01472 7.49999 6.5V9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M4.2678 18.8447C4.49268 20.515 5.87612 21.8235 7.55965 21.9009C8.97627 21.966 10.4153 22 12 22C13.5847 22 15.0237 21.966 16.4403 21.9009C18.1239 21.8235 19.5073 20.515 19.7322 18.8447C19.8789 17.7547 20 16.6376 20 15.5C20 14.3624 19.8789 13.2453 19.7322 12.1553C19.5073 10.485 18.1239 9.17649 16.4403 9.09909C15.0237 9.03397 13.5847 9 12 9C10.4153 9 8.97627 9.03397 7.55965 9.09909C5.87612 9.17649 4.49268 10.485 4.2678 12.1553C4.12104 13.2453 3.99999 14.3624 3.99999 15.5C3.99999 16.6376 4.12104 17.7547 4.2678 18.8447Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 14.5V17.5M13 14.5C13 15.0523 12.5523 15.5 12 15.5C11.4477 15.5 11 15.0523 11 14.5C11 13.9477 11.4477 13.5 12 13.5C12.5523 13.5 13 13.9477 13 14.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16.5 9V6.5C16.5 4.01472 14.4853 2 12 2C9.51471 2 7.49999 4.01472 7.49999 6.5V9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M4.2678 18.8447C4.49268 20.515 5.87612 21.8235 7.55965 21.9009C8.97627 21.966 10.4153 22 12 22C13.5847 22 15.0237 21.966 16.4403 21.9009C18.1239 21.8235 19.5073 20.515 19.7322 18.8447C19.8789 17.7547 20 16.6376 20 15.5C20 14.3624 19.8789 13.2453 19.7322 12.1553C19.5073 10.485 18.1239 9.17649 16.4403 9.09909C15.0237 9.03397 13.5847 9 12 9C10.4153 9 8.97627 9.03397 7.55965 9.09909C5.87612 9.17649 4.49268 10.485 4.2678 12.1553C4.12104 13.2453 3.99999 14.3624 3.99999 15.5C3.99999 16.6376 4.12104 17.7547 4.2678 18.8447Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The shackle lifts and clicks shut.</p><p class="wh">“Your photo stays private”</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="card: A quick swipe.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12C2 8.46252 2 6.69377 3.0528 5.5129C3.22119 5.32403 3.40678 5.14935 3.60746 4.99087C4.86213 4 6.74142 4 10.5 4H13.5C17.2586 4 19.1379 4 20.3925 4.99087C20.5932 5.14935 20.7788 5.32403 20.9472 5.5129C22 6.69377 22 8.46252 22 12C22 15.5375 22 17.3062 20.9472 18.4871C20.7788 18.676 20.5932 18.8506 20.3925 19.0091C19.1379 20 17.2586 20 13.5 20H10.5C6.74142 20 4.86213 20 3.60746 19.0091C3.40678 18.8506 3.22119 18.676 3.0528 18.4871C2 17.3062 2 15.5375 2 12Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M10 16H11.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.5 16L18 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M2 9H22" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12C2 8.46252 2 6.69377 3.0528 5.5129C3.22119 5.32403 3.40678 5.14935 3.60746 4.99087C4.86213 4 6.74142 4 10.5 4H13.5C17.2586 4 19.1379 4 20.3925 4.99087C20.5932 5.14935 20.7788 5.32403 20.9472 5.5129C22 6.69377 22 8.46252 22 12C22 15.5375 22 17.3062 20.9472 18.4871C20.7788 18.676 20.5932 18.8506 20.3925 19.0091C19.1379 20 17.2586 20 13.5 20H10.5C6.74142 20 4.86213 20 3.60746 19.0091C3.40678 18.8506 3.22119 18.676 3.0528 18.4871C2 17.3062 2 15.5375 2 12Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M10 16H11.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.5 16L18 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M2 9H22" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">A quick swipe.</p><p class="wh">“No card required”</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="book: The page turns.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.99978 3.5H6.60021C4.43183 3.5 3.34764 3.5 2.67399 4.17362C2.00034 4.84724 2.00029 5.93144 2.00021 8.09982L2 13.3998C1.99992 15.5684 1.99987 16.6526 2.67353 17.3263C3.34719 18 4.43146 18 6.6 18H8.95042C10.4329 18 11.7092 19.0464 11.9999 20.5V5.5C11.0556 4.24097 9.99989 3.5 7.99978 3.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16.0001 3.5H17.3997C19.5681 3.5 20.6523 3.5 21.3259 4.17362C21.9996 4.84724 21.9996 5.93144 21.9997 8.09982L21.9999 13.3998C22 15.5684 22 16.6526 21.3264 17.3263C20.6527 18 19.5684 18 17.3999 18H15.0495C13.567 18 12.2907 19.0464 12 20.5V5.5C12.9443 4.24097 14 3.5 16.0001 3.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.99978 3.5H6.60021C4.43183 3.5 3.34764 3.5 2.67399 4.17362C2.00034 4.84724 2.00029 5.93144 2.00021 8.09982L2 13.3998C1.99992 15.5684 1.99987 16.6526 2.67353 17.3263C3.34719 18 4.43146 18 6.6 18H8.95042C10.4329 18 11.7092 19.0464 11.9999 20.5V5.5C11.0556 4.24097 9.99989 3.5 7.99978 3.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16.0001 3.5H17.3997C19.5681 3.5 20.6523 3.5 21.3259 4.17362C21.9996 4.84724 21.9996 5.93144 21.9997 8.09982L21.9999 13.3998C22 15.5684 22 16.6526 21.3264 17.3263C20.6527 18 19.5684 18 17.3999 18H15.0495C13.567 18 12.2907 19.0464 12 20.5V5.5C12.9443 4.24097 14 3.5 16.0001 3.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The page turns.</p><p class="wh">Docs (sidebar)</p></div>
+</article>
+<article class="cd" data-im-host tabindex="0" aria-label="reload: Goes round once (a half turn).">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.5 5.5H9.5C5.78672 5.5 3 8.18503 3 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M3.5 18.5H14.5C18.2133 18.5 21 15.815 21 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M18.5 3C18.5 3 21 4.84122 21 5.50002C21 6.15882 18.5 8 18.5 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M5.49998 16C5.49998 16 3.00001 17.8412 3 18.5C2.99999 19.1588 5.5 21 5.5 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Surprise me again</span></span></div>
+  <div class="meta"><p class="mo">Goes round once (a half turn).</p><p class="wh">Surprise me again, Regenerate</p></div>
+</article>
+<article class="cd sc" data-im-host tabindex="0" aria-label="repeat: Goes round once.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16.3884 3L17.3913 3.97574C17.8393 4.41165 18.0633 4.62961 17.9844 4.81481C17.9056 5 17.5888 5 16.9552 5H9.19422C5.22096 5 2 8.13401 2 12C2 13.4872 2.47668 14.8662 3.2895 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.61156 21L6.60875 20.0243C6.16074 19.5883 5.93673 19.3704 6.01557 19.1852C6.09441 19 6.4112 19 7.04478 19H14.8058C18.779 19 22 15.866 22 12C22 10.5128 21.5233 9.13383 20.7105 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16.3884 3L17.3913 3.97574C17.8393 4.41165 18.0633 4.62961 17.9844 4.81481C17.9056 5 17.5888 5 16.9552 5H9.19422C5.22096 5 2 8.13401 2 12C2 13.4872 2.47668 14.8662 3.2895 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.61156 21L6.60875 20.0243C6.16074 19.5883 5.93673 19.3704 6.01557 19.1852C6.09441 19 6.4112 19 7.04478 19H14.8058C18.779 19 22 15.866 22 12C22 10.5128 21.5233 9.13383 20.7105 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Goes round once.</p><p class="wh">Spacelab scene only, ready for other pages</p></div>
+</article>
+<article class="cd sc" data-im-host tabindex="0" aria-label="clock: The hands sweep a lap.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"></circle><path d="M12 8V12L14 14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"></circle><path d="M12 8V12L14 14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The hands sweep a lap.</p><p class="wh">Spacelab scene only, ready for other pages</p></div>
+</article>
+<article class="cd sc" data-im-host tabindex="0" aria-label="mouse: Clicks down, the click mark draws.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.5 2L13.5 6M13.5 10L13.5 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M5 2C3.94531 3.13158 3.23544 4.50113 3 6" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M12 7.5C12 7.03406 12 6.80109 12.0761 6.61732C12.1776 6.37229 12.3723 6.17761 12.6173 6.07612C12.8011 6 13.0341 6 13.5 6C13.9659 6 14.1989 6 14.3827 6.07612C14.6277 6.17761 14.8224 6.37229 14.9239 6.61732C15 6.80109 15 7.03406 15 7.5V8.5C15 8.96594 15 9.19891 14.9239 9.38268C14.8224 9.62771 14.6277 9.82239 14.3827 9.92388C14.1989 10 13.9659 10 13.5 10C13.0341 10 12.8011 10 12.6173 9.92388C12.3723 9.82239 12.1776 9.62771 12.0761 9.38268C12 9.19891 12 8.96594 12 8.5V7.5Z" stroke="currentColor" stroke-width="1.5"></path><path d="M6.24061 17.0888C6.43047 19.4803 8.32417 21.511 10.765 21.8118C11.6626 21.9223 12.5752 22 13.5 22C14.4247 22 15.3373 21.9223 16.2349 21.8118C18.6758 21.511 20.5694 19.4803 20.7593 17.0888C20.8909 15.4317 21 13.732 21 12C21 10.268 20.8909 8.56832 20.7593 6.91118C20.5694 4.51965 18.6758 2.48893 16.2349 2.1882C15.3373 2.07762 14.4247 2 13.5 2C12.5752 2 11.6626 2.07762 10.765 2.1882C8.32417 2.48893 6.43047 4.51965 6.24061 6.91118C6.10903 8.56832 6 10.268 6 12C6 13.732 6.10903 15.4317 6.24061 17.0888Z" stroke="currentColor" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13.5 2L13.5 6M13.5 10L13.5 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M5 2C3.94531 3.13158 3.23544 4.50113 3 6" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path><path d="M12 7.5C12 7.03406 12 6.80109 12.0761 6.61732C12.1776 6.37229 12.3723 6.17761 12.6173 6.07612C12.8011 6 13.0341 6 13.5 6C13.9659 6 14.1989 6 14.3827 6.07612C14.6277 6.17761 14.8224 6.37229 14.9239 6.61732C15 6.80109 15 7.03406 15 7.5V8.5C15 8.96594 15 9.19891 14.9239 9.38268C14.8224 9.62771 14.6277 9.82239 14.3827 9.92388C14.1989 10 13.9659 10 13.5 10C13.0341 10 12.8011 10 12.6173 9.92388C12.3723 9.82239 12.1776 9.62771 12.0761 9.38268C12 9.19891 12 8.96594 12 8.5V7.5Z" stroke="currentColor" stroke-width="1.5"></path><path d="M6.24061 17.0888C6.43047 19.4803 8.32417 21.511 10.765 21.8118C11.6626 21.9223 12.5752 22 13.5 22C14.4247 22 15.3373 21.9223 16.2349 21.8118C18.6758 21.511 20.5694 19.4803 20.7593 17.0888C20.8909 15.4317 21 13.732 21 12C21 10.268 20.8909 8.56832 20.7593 6.91118C20.5694 4.51965 18.6758 2.48893 16.2349 2.1882C15.3373 2.07762 14.4247 2 13.5 2C12.5752 2 11.6626 2.07762 10.765 2.1882C8.32417 2.48893 6.43047 4.51965 6.24061 6.91118C6.10903 8.56832 6 10.268 6 12C6 13.732 6.10903 15.4317 6.24061 17.0888Z" stroke="currentColor" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">Clicks down, the click mark draws.</p><p class="wh">Spacelab scene only, ready for other pages</p></div>
+</article>
+<article class="cd sc" data-im-host tabindex="0" aria-label="expand: The corners push out.">
+  <div class="stage"><svg width="56" height="56" class="big" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.00001 3.09779C8.00001 3.09779 4.03375 2.74194 3.38784 3.38785C2.74192 4.03375 3.09784 8 3.09784 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M8.00001 20.9022C8.00001 20.9022 4.03375 21.2581 3.38784 20.6122C2.74192 19.9662 3.09784 16 3.09784 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16 3.09779C16 3.09779 19.9663 2.74194 20.6122 3.38785C21.2581 4.03375 20.9022 8 20.9022 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16 20.9022C16 20.9022 19.9663 21.2581 20.6122 20.6122C21.2581 19.9662 20.9022 16 20.9022 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.0107 9.99847L20.0625 3.94678" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M9.99696 14.0024L3.63966 20.3807" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M9.99732 10.0024L3.84571 3.85889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M13.9795 14.0024L20.5279 20.4983" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+  <div class="real"><span class="lbl">Real size</span><span class="mk solo"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.00001 3.09779C8.00001 3.09779 4.03375 2.74194 3.38784 3.38785C2.74192 4.03375 3.09784 8 3.09784 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M8.00001 20.9022C8.00001 20.9022 4.03375 21.2581 3.38784 20.6122C2.74192 19.9662 3.09784 16 3.09784 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16 3.09779C16 3.09779 19.9663 2.74194 20.6122 3.38785C21.2581 4.03375 20.9022 8 20.9022 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M16 20.9022C16 20.9022 19.9663 21.2581 20.6122 20.6122C21.2581 19.9662 20.9022 16 20.9022 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M14.0107 9.99847L20.0625 3.94678" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M9.99696 14.0024L3.63966 20.3807" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M9.99732 10.0024L3.84571 3.85889" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M13.9795 14.0024L20.5279 20.4983" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></div>
+  <div class="meta"><p class="mo">The corners push out.</p><p class="wh">Spacelab scene only, ready for other pages</p></div>
+</article></div>
+</section><section class="grp" id="s-c">
+  <header class="gh"><span class="code">C</span><div><h2>Rotation</h2><p>Only for chevrons that open something: menus and accordions. The chevron turns with the state and stays turned while it’s open. Click it.</p></div></header>
+  <div class="grid three">
+    <article class="cd sw"><div class="stage"><button class="key acc" type="button" aria-expanded="false"><span>Spaces</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="chd"><path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg></button></div><div class="meta"><p class="mo">Flips 180° while open</p><p class="wh">Nav dropdowns (Spaces), accordions</p></div></article>
+  </div>
+</section>
+<section class="grp" id="s-e">
+  <header class="gh"><span class="code">E</span><div><h2>Swap</h2><p>When a click changes the state, the new icon blurs and scales in, then plays its own motion. Click these.</p></div></header>
+  <div class="grid three">
+    <article class="cd sw"><div class="stage"><button class="key" type="button" id="swPlay" aria-label="Pause stories"><span class="a"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7C4 5.58579 4 4.87868 4.43934 4.43934C4.87868 4 5.58579 4 7 4C8.41421 4 9.12132 4 9.56066 4.43934C10 4.87868 10 5.58579 10 7V17C10 18.4142 10 19.1213 9.56066 19.5607C9.12132 20 8.41421 20 7 20C5.58579 20 4.87868 20 4.43934 19.5607C4 19.1213 4 18.4142 4 17V7Z" stroke="currentColor" stroke-width="1.5"></path><path d="M14 7C14 5.58579 14 4.87868 14.4393 4.43934C14.8787 4 15.5858 4 17 4C18.4142 4 19.1213 4 19.5607 4.43934C20 4.87868 20 5.58579 20 7V17C20 18.4142 20 19.1213 19.5607 19.5607C19.1213 20 18.4142 20 17 20C15.5858 20 14.8787 20 14.4393 19.5607C14 19.1213 14 18.4142 14 17V7Z" stroke="currentColor" stroke-width="1.5"></path></svg></span><span class="b" hidden><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18.8906 12.846C18.5371 14.189 16.8667 15.138 13.5257 17.0361C10.296 18.8709 8.6812 19.7884 7.37983 19.4196C6.8418 19.2671 6.35159 18.9776 5.95624 18.5787C5 17.6139 5 15.7426 5 12C5 8.2574 5 6.3861 5.95624 5.42132C6.35159 5.02245 6.8418 4.73288 7.37983 4.58042C8.6812 4.21165 10.296 5.12907 13.5257 6.96393C16.8667 8.86197 18.5371 9.811 18.8906 11.154C19.0365 11.7084 19.0365 12.2916 18.8906 12.846Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></button></div><div class="meta"><p class="mo">Pause ↔ play</p><p class="wh">Stories</p></div></article>
+    <article class="cd sw"><div class="stage"><button class="key" type="button" id="swTheme" aria-label="Switch theme"><span class="a"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M17 12C17 14.7614 14.7614 17 12 17C9.23858 17 7 14.7614 7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12Z" stroke="currentColor" stroke-width="1.5"></path><path d="M12 2V3.5M12 20.5V22M19.0708 19.0713L18.0101 18.0106M5.98926 5.98926L4.9286 4.9286M22 12H20.5M3.5 12H2M19.0713 4.92871L18.0106 5.98937M5.98975 18.0107L4.92909 19.0714" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"></path></svg></span><span class="b" hidden><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></button></div><div class="meta"><p class="mo">Sun ↔ moon</p><p class="wh">Theme switch (this demo only swaps the icon)</p></div></article>
+    <article class="cd sw"><div class="stage"><button class="key" type="button" id="swCopy" aria-label="Copy the server address"><span class="a"><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.5 14.5C7.5 11.2002 7.5 9.55025 8.52513 8.52513C9.55025 7.5 11.2002 7.5 14.5 7.5C17.7998 7.5 19.4497 7.5 20.4749 8.52513C21.5 9.55025 21.5 11.2002 21.5 14.5C21.5 17.7998 21.5 19.4497 20.4749 20.4749C19.4497 21.5 17.7998 21.5 14.5 21.5C11.2002 21.5 9.55025 21.5 8.52513 20.4749C7.5 19.4497 7.5 17.7998 7.5 14.5Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7.5 16.5C6.10355 16.5 5.40533 16.5 4.84402 16.3036C3.83866 15.9518 3.0482 15.1613 2.69641 14.156C2.5 13.5947 2.5 12.8964 2.5 11.5V9.5C2.5 6.20017 2.5 4.55025 3.52513 3.52513C4.55025 2.5 6.20017 2.5 9.5 2.5H11.5C12.8964 2.5 13.5947 2.5 14.156 2.69641C15.1613 3.0482 15.9518 3.83866 16.3036 4.84402C16.5 5.40533 16.5 6.10355 16.5 7.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span><span class="b" hidden><svg width="20" height="20" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 14L8.5 17.5L19 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></span></button></div><div class="meta"><p class="mo">Copy → tick → copy</p><p class="wh">Copy the server address. The tick draws, then swaps back after 1.5s.</p></div></article>
+  </div>
+</section>
+<section class="grp" id="s-g">
+  <header class="gh"><span class="code">G</span><div><h2>Idle</h2><p>The only icon that moves on its own: the Sparkle on “Try Gemini Omni” twinkles every 5.5 seconds while it’s on screen and nobody is hovering it. Nothing else on the page idles.</p></div></header>
+  <div class="grid three"><article class="cd sw"><div class="stage"><a class="key pri" href="#s-g"><svg width="16" height="16" class="" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 2L15.5387 4.39157C15.9957 6.42015 17.5798 8.00431 19.6084 8.46127L22 9L19.6084 9.53873C17.5798 9.99569 15.9957 11.5798 15.5387 13.6084L15 16L14.4613 13.6084C14.0043 11.5798 12.4202 9.99569 10.3916 9.53873L8 9L10.3916 8.46127C12.4201 8.00431 14.0043 6.42015 14.4613 4.39158L15 2Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path><path d="M7 12L7.38481 13.7083C7.71121 15.1572 8.84275 16.2888 10.2917 16.6152L12 17L10.2917 17.3848C8.84275 17.7112 7.71121 18.8427 7.38481 20.2917L7 22L6.61519 20.2917C6.28879 18.8427 5.15725 17.7112 3.70827 17.3848L2 17L3.70827 16.6152C5.15725 16.2888 6.28879 15.1573 6.61519 13.7083L7 12Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path></svg><span>Try Gemini Omni</span></a></div><div class="meta"><p class="mo">Twinkle, on a loop</p><p class="wh">Models section, featured card</p></div></article></div>
+</section>
+  <footer>“Play all” runs a whole section one card after another so you can compare them. That’s only for this sheet: on the real page, neighbours never move together. The chevron in the nav’s Spaces menu keeps its existing flip when the menu opens.</footer>
+</main>
+
+<script>
+/* ===================== Icon motion =====================
+   Finds every Hugeicons icon, names it, splits it into parts, and plays its motion
+   when you hover or press the thing it sits in. When a click swaps one icon for another
+   (play/pause, sun/moon, copy/tick), the new one blurs in and plays its own motion.
+   Default is DRAW (the strokes redraw, part by part). Only icons whose object has an obvious
+   action get their own move (plug plugs in, link joins, camera records...). Arrows nudge on hover
+   and fly out and back in on press. Chevrons that open things rotate with the state (CSS in kit.css).
+   The motions themselves live in icon-motion.css. */
+(function () {
+  var doc = document;
+  // name: [first path starts with, (optional) another path starts with, duration ms]
+  var ICONS = {
+    "chev-r":   ["M9.00005 6C9", null, 460],
+    "chev-l":   ["M15 6C15 6 9", null, 460],
+    "arrow-up": ["M12 5.5V19", null, 460],
+    plus:       ["M12 4V20M20 12H4", null, 480],
+    add:        ["M12.001 5.00003V19", null, 480],
+    minus:      ["M20 12L4 12", null, 420],
+    sun:        ["M17 12C17 14.7614", null, 560],
+    moon:       ["M21.5 14.0784", null, 600],
+    play:       ["M18.8906 12.846", null, 460],
+    pause:      ["M4 7C4 5.58579", null, 420],
+    video:      ["M2 11C2 7.70017", null, 560],
+    image2:     ["M3 16L7.46967", "M15.5 8C", 500],
+    imgadd:     ["M3 16L7.46967", "M12 2.5C", 480],
+    image1:     ["M2.5 12C2.5 7.52", null, 500],
+    folderadd:  ["M13 21H12C7.28", null, 500],
+    folder:     ["M8 7H16.75C18.85", null, 500],
+    tick:       ["M5 14L8.5 17.5L19", null, 420],
+    copy:       ["M7.5 14.5C7.5 11.2", null, 480],
+    link:       ["M9.14339 10.691", null, 520],
+    sparkles:   ["M15 2L15.5387", null, 650],
+    plug:       ["M15.5 2V6M8.5 6V2", null, 540],
+    flask:      ["M3 9L11 9M20 9", null, 620],
+    workflow:   ["M3 4C3 2.34533", null, 680],
+    aichat:     ["M14.1706 20.8905", null, 600],
+    aivideo:    ["M14.4531 12.8948", null, 620],
+    userstar:   ["M11.995 13.5663", null, 660],
+    home:       ["M3 11.9896V14.5", null, 540],
+    book:       ["M7.99978 3.5H6.6", null, 560],
+    crown:      ["M5 21H19", null, 540],
+    reload:     ["M20.5 5.5H9.5C5.78", null, 560],
+    repeat:     ["M16.3884 3L17.3913", null, 560],
+    share:      ["M21 6.5C21 8.15685", null, 580],
+    grid:       ["M3.88884 9.66294", null, 500],
+    mouse:      ["M13.5 2L13.5 6", null, 520],
+    expand:     ["M8.00001 3.09779", null, 480],
+    clock:      ["M12 8V12L14 14", null, 640],
+    diamond:    ["M5.92089 5.92089", null, 480],
+    wand:       ["M13.9258 12.7775", null, 700],
+    info:       ["M12 16V12", null, 460],
+    lock:       ["M12 14.5V17.5", null, 500],
+    card:       ["M2 12C2 8.46252", null, 480]
+  };
+  var NAMES = Object.keys(ICONS);
+  // icons that simply redraw themselves (the default when an icon has no obvious action of its own)
+  var DRAW = { plus: 1, add: 1, minus: 1, sun: 1, moon: 1, play: 1, pause: 1, image1: 1, image2: 1, imgadd: 1, folderadd: 1, folder: 1,
+    tick: 1, diamond: 1, info: 1, home: 1, crown: 1, userstar: 1, aivideo: 1, workflow: 1, share: 1, grid: 1 };
+  // arrows: nudge on hover, fly out and back in on press
+  var ARROW = { "chev-r": 1, "chev-l": 1, "arrow-up": 1 };
+  var DRAW_MS = 440, DRAW_STEP = 60;
+  // what counts as "the thing the icon sits in": anything you can hover or press, plus tags and small labelled lines
+  var HOST = "a,button,[role=button],[role=tab],[role=radio],[role=switch],[role=checkbox],label,summary,.pd-chip,.eyebrow,.dr-fine > span,[data-im-host]";
+  // icons inside the scripted motion scenes follow the scene, not the pointer
+  var SKIP = ".mm,.ma,.mm-in,.sl-cur,[data-im-off]";
+  var SHAPES = "path,circle,rect,line,polyline,polygon,ellipse";
+
+  function nameOf(svg) {
+    var ds = [].map.call(svg.querySelectorAll("path"), function (p) { return (p.getAttribute("d") || "").trim(); });
+    if (!ds.length) return null;
+    for (var i = 0; i < NAMES.length; i++) {
+      var r = ICONS[NAMES[i]];
+      if (ds.some(function (d) { return d.indexOf(r[0]) === 0; }) && (!r[1] || ds.some(function (d) { return d.indexOf(r[1]) === 0; }))) return NAMES[i];
+    }
+    return null;
+  }
+  function tag(svg) {
+    if (svg.hasAttribute("data-im") || svg.hasAttribute("data-im-x")) return;
+    if (svg.closest(SKIP)) { svg.setAttribute("data-im-x", ""); return; }
+    var n = nameOf(svg);
+    if (!n) { svg.setAttribute("data-im-x", ""); return; }
+    var parts = [].slice.call(svg.children).filter(function (c) { return c.matches(SHAPES); });
+    if (!parts.length) { svg.setAttribute("data-im-x", ""); return; }
+    var g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.setAttribute("class", "im-a");
+    parts.forEach(function (p, i) { p.setAttribute("data-p", i); p.setAttribute("pathLength", "1"); p.style.setProperty("--i", i); g.appendChild(p); });
+    svg._imN = parts.length;
+    svg.appendChild(g);
+    svg.setAttribute("data-im", n);
+  }
+  function scan() { doc.querySelectorAll('svg[viewBox="0 0 24 24"]:not([data-im]):not([data-im-x])').forEach(tag); }
+
+  /* play one icon's motion; a motion already running finishes first (no stutter on quick re-hovers) */
+  function play(svg, press) {
+    var n = svg.getAttribute("data-im"), r = ICONS[n]; if (!r) return;
+    var fly = press && ARROW[n];
+    if (svg._im && !fly) return;                     // let a running motion finish (no stutter on quick re-hovers)
+    clearTimeout(svg._im);
+    var cls = fly ? "im-fly" : "im-on";
+    var ms = fly ? 460 : DRAW[n] ? DRAW_MS + DRAW_STEP * ((svg._imN || 1) - 1) : r[2];
+    svg.classList.remove("im-on", "im-fly"); void svg.getBoundingClientRect(); svg.classList.add(cls);
+    svg._im = setTimeout(function () { svg.classList.remove(cls); svg._im = 0; }, ms + 40);
+  }
+  function shown(el) { return el.getClientRects().length > 0; }
+  function iconsOf(host) {
+    return [].filter.call(host.querySelectorAll("svg[data-im]"), function (s) { return s.closest(HOST) === host && shown(s); });
+  }
+  function fire(host, press) { iconsOf(host).forEach(function (s) { play(s, press); }); }
+
+  /* hover (mouse/pen only), press (any pointer), keyboard focus */
+  doc.addEventListener("pointerover", function (e) {
+    if (e.pointerType === "touch") return;
+    var h = e.target.closest && e.target.closest(HOST); if (!h) return;
+    if (e.relatedTarget && h.contains(e.relatedTarget)) return;
+    fire(h);
+  }, true);
+  doc.addEventListener("pointerdown", function (e) { var h = e.target.closest && e.target.closest(HOST); if (h) fire(h, true); }, true);
+  doc.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    var h = e.target.closest && e.target.closest(HOST); if (h && h === e.target) fire(h, true);
+  });
+  doc.addEventListener("focusin", function (e) {
+    var h = e.target.closest && e.target.closest(HOST);
+    if (h && h === e.target && h.matches(":focus-visible")) fire(h);
+  });
+
+  /* E. swap: a control holding two icons (one hidden). When the visible one changes, the new one blurs in and plays. */
+  var groups = [], watch = typeof MutationObserver !== "undefined" ? new MutationObserver(function () { schedule(); }) : null, queued = false;
+  function schedule() { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; check(); }); }
+  function check() {
+    groups.forEach(function (g) {
+      var vis = g.icons.filter(shown)[0] || null;
+      if (vis && vis !== g.vis && g.vis !== undefined) {
+        clearTimeout(vis._sw); vis.classList.remove("im-sw"); void vis.getBoundingClientRect(); vis.classList.add("im-sw");
+        vis._sw = setTimeout(function () { vis.classList.remove("im-sw"); }, 320);
+        clearTimeout(vis._im); vis._im = 0; play(vis);
+      }
+      g.vis = vis;
+    });
+  }
+  function findGroups() {
+    doc.querySelectorAll(HOST).forEach(function (h) {
+      if (h._imG) return;
+      var all = [].filter.call(h.querySelectorAll("svg[data-im]"), function (s) { return s.closest(HOST) === h; });
+      if (all.length < 2) return;
+      h._imG = true;
+      var g = { host: h, icons: all, vis: undefined }; groups.push(g);
+      if (watch) for (var el = h; el && el.nodeType === 1; el = el.parentElement) {
+        if (!el._imW) { el._imW = true; watch.observe(el, { attributes: true, attributeFilter: ["class", "data-theme", "hidden", "style"] }); }
+      }
+      // icons can also be shown/hidden by a class on themselves or their wrappers
+      all.forEach(function (s) { for (var el = s; el && el !== h; el = el.parentElement) if (!el._imW && watch) { el._imW = true; watch.observe(el, { attributes: true, attributeFilter: ["class", "hidden", "style"] }); } });
+    });
+    check();
+  }
+
+  /* G. idle: only the Sparkle on "Try Gemini Omni", every ~5.5s while it's on screen and not being hovered */
+  function idle() {
+    var btn = [].filter.call(doc.querySelectorAll("a.key, button.key"), function (b) { return /Try Gemini Omni/.test(b.textContent); })[0];
+    var svg = btn && btn.querySelector('svg[data-im="sparkles"]'); if (!svg || svg._idle) return;
+    svg._idle = true; var on = false, over = false;
+    btn.addEventListener("pointerenter", function () { over = true; });
+    btn.addEventListener("pointerleave", function () { over = false; });
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { on = es[0].isIntersecting; }, { threshold: 0.6 }).observe(btn);
+    else on = true;
+    setInterval(function () { if (on && !over && !doc.hidden) play(svg); }, 5500);
+  }
+
+  function init() {
+    scan(); findGroups(); idle();
+    // icons added later (prompt chips, menus) get picked up too
+    if (typeof MutationObserver !== "undefined") {
+      var q = false;
+      new MutationObserver(function (ms) {
+        if (q) return;
+        if (!ms.some(function (m) { return m.addedNodes.length; })) return;
+        q = true; requestAnimationFrame(function () { q = false; scan(); findGroups(); });
+      }).observe(doc.body, { childList: true, subtree: true });
+    }
+  }
+  if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", init); else init();
+  window.slIconMotion = { play: play, tag: tag, names: NAMES, icons: ICONS };
+})();
+
+(function () {
+  var AC = null;
+  function tick(f) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime; o.type = "triangle"; o.frequency.setValueAtTime(f || 880, t); o.frequency.exponentialRampToValueAtTime((f || 880) * 0.6, t + 0.06); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.08); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + 0.09); } catch (e) {} }
+  function flip(btn) { var a = btn.querySelector(".a"), b = btn.querySelector(".b"); var on = a.hidden; a.hidden = !on; b.hidden = on; return !on; }
+  document.getElementById("swPlay").addEventListener("click", function () { var paused = flip(this); this.setAttribute("aria-label", paused ? "Play stories" : "Pause stories"); tick(760); });
+  document.getElementById("swTheme").addEventListener("click", function () { flip(this); tick(660); });
+  document.getElementById("swCopy").addEventListener("click", function () {
+    var btn = this; tick(980); if (btn._t) return;
+    var a = btn.querySelector(".a"), b = btn.querySelector(".b"); a.hidden = true; b.hidden = false;
+    btn._t = setTimeout(function () { a.hidden = false; b.hidden = true; btn._t = 0; }, 1500);
+  });
+  document.querySelectorAll(".acc").forEach(function (b) { b.addEventListener("click", function () { b.setAttribute("aria-expanded", String(b.getAttribute("aria-expanded") !== "true")); tick(700); }); });
+  document.querySelectorAll(".playall").forEach(function (b) {
+    b.addEventListener("click", function () {
+      tick(820);
+      var cards = document.querySelectorAll("#" + b.dataset.sec + " .cd svg[data-im]");
+      [].forEach.call(cards, function (s, i) { setTimeout(function () { window.slIconMotion.play(s); }, Math.floor(i / 2) * 140); });
+    });
+  });
+  document.querySelectorAll(".cd[data-im-host], .key").forEach(function (c) { c.addEventListener("pointerdown", function () { tick(c.classList.contains("cd") ? 700 : 820); }); });
+})();
+</script>
+
+</body></html>
