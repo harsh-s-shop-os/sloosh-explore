@@ -1098,3 +1098,8 @@ button.pd-chip:active, .pd-ic:active { transform: scale(0.97); }
 .mdl2 .mt-n { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 2; color: hsl(var(--on-media)); pointer-events: none; }
 .mdl2 .mt-ty { color: hsl(var(--on-media-muted)); }
 @media (max-width: 760px) { .mdl2 .mt-n { left: 12px; right: 12px; bottom: 12px; } }
+
+/* ---------- split banners: content block on the top padding line, actions (CTAs, MCP address) on the bottom padding line ---------- */
+.bn-copy { justify-content: flex-start; }
+.bn-lab .bn-copy .ctas { margin-top: auto; }
+.bn-ag .ag-copy2 { justify-content: space-between; }
