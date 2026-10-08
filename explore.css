@@ -763,17 +763,14 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 #tools { padding-bottom: 120px; }
 @media (max-width: 760px) { #tools { padding-bottom: 80px; } }
 
-/* ---------- section rhythm: 80px between sections; 120px on either side of the Agents banner and
-   between the Spaces banner and the busy Series grid. The templates grid's fade already reads as space,
-   so the Spaces banner after it stays at 80. Phones: 80 everywhere. ---------- */
+/* ---------- section rhythm: one gap everywhere, 120px between sections (80px on phones) ---------- */
 .sec-h h2 { color: hsl(var(--foreground)); }
 .sec-h { margin-bottom: 32px; }
-.sect, #models { padding-top: 80px; }
-#series, #agents, #tools { padding-top: 120px; }
-#tools { padding-bottom: 80px; }
+.sect, #models, #series, #agents, #tools { padding-top: 120px; }
+#tools { padding-bottom: 0; }
 @media (max-width: 760px) {
   .sect, #models, #series, #agents, #tools { padding-top: 80px; }
-  #tools { padding-bottom: 80px; }
+  #tools { padding-bottom: 0; }
   .sec-h { margin-bottom: 24px; }
 }
 
