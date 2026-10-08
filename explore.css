@@ -1410,14 +1410,16 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
    The box keeps one height in both states, so the section never changes height and the carousel always peeks the same.
    Motion: pill, headline, box, notes, then prints spring in (.dr-on); prints leave past the edges while looks show (.res).
    Below 1080px of section width the prints line up under the box. */
-.dr-v3 { --spring: cubic-bezier(0.34, 1.32, 0.64, 1); --bh: 344px;
+.dr-v3 { --spring: cubic-bezier(0.34, 1.32, 0.64, 1); --bh: 418px;
   container-type: inline-size; min-height: 0; padding: 40px 0 100px; overflow-x: clip; overflow-y: visible; scroll-margin-top: 61px; }
 .shell-side .dr-v3 { min-height: 0; scroll-margin-top: 0; }
+/* the dot ground: even dots that shade down into black. Nothing thins them behind the content */
+.dr-v3 .dr-ground { -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%); }
 .dr-v3.dragging { z-index: 6; }
 .dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 28px; }
 .dr-v3 .dr-h { margin-top: 16px; }
 .dr-v3 .dr-stage { max-width: 640px; }
-.dr-v3.res .dr-stage { max-width: 720px; }
+.dr-v3.res .dr-stage { max-width: 912px; }
 .dr-v3.res .dr-box.over { box-shadow: inset 0 0 0 2px hsl(var(--brand-accent)); }
 .dr-v3 .dr-zone { justify-content: center; padding: 40px 24px; }
 /* the bird perches on the drawn photo */
@@ -1488,10 +1490,15 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 }
 
 /* the result: one grid, your image and the three looks at the same size; the box keeps the upload box's height */
-.dr-v3 .dr-run { grid-template-columns: minmax(0, 1fr) 1px repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; column-gap: 12px; row-gap: 16px; padding: 16px; align-items: start; }
+.dr-v3 .dr-run { grid-template-columns: minmax(0, 1fr) 1px repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; column-gap: 16px; row-gap: 20px; padding: 24px; align-items: start; }
+/* column one sits in a darker well so your photo reads apart from the looks */
+/* the card's hairline drawn over the well, so the darker column doesn't eat the edge */
+.dr-v3 .dr-box::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; box-shadow: inset 0 0 0 1px hsl(var(--border)); pointer-events: none; }
+.dr-v3 .dr-box.over::after { box-shadow: inset 0 0 0 2px hsl(var(--brand-accent)); }
+.dr-v3 .dr-well { grid-column: 1; grid-row: 1 / 4; align-self: stretch; margin: -24px -16px -24px -24px; background: hsl(var(--background)); }
 .dr-v3 .dr-col-t { grid-column: 1; grid-row: 1; align-self: center; white-space: nowrap; }
-.dr-v3 .dr-div { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin-block: -16px; background: hsl(var(--border)); }
-.dr-v3 .dr-out-h { grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
+.dr-v3 .dr-div { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin-block: -24px; background: hsl(var(--border)); }
+.dr-v3 .dr-out-h { grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
 .dr-v3 .dr-out-t { font-size: 16px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
 .dr-v3 .dr-ph { grid-column: 1; grid-row: 2; border-radius: 12px; }
 .dr-v3 .dr-cards { display: contents; }
@@ -1500,21 +1507,64 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 .dr-v3 .dr-card:nth-child(1) { grid-column: 3; grid-row: 2; }
 .dr-v3 .dr-card:nth-child(2) { grid-column: 4; grid-row: 2; }
 .dr-v3 .dr-card:nth-child(3) { grid-column: 5; grid-row: 2; }
-.dr-v3 .dr-cap { left: 10px; right: 10px; bottom: 10px; }
-.dr-v3 .dr-hov { top: 8px; right: 8px; }
+.dr-v3 .dr-cap { left: 12px; right: 12px; bottom: 12px; }
+/* hover: the caption rises and Make it a video comes up under it (the CardFade pattern on the media cards) */
+.dr-v3 .dr-act { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 240ms var(--ease-arrive), opacity 200ms ease; }
+.dr-v3 .dr-act > div { overflow: hidden; }
+.dr-v3 .dr-act .key { width: 100%; margin-top: 12px; pointer-events: auto; }
+.dr-v3 .dr-card.on:hover .dr-act, .dr-v3 .dr-card.on:focus-within .dr-act { grid-template-rows: 1fr; opacity: 1; }
+.dr-v3 .dr-card.on:hover::after, .dr-v3 .dr-card.on:focus-within::after { background: linear-gradient(0deg, hsl(var(--media-scrim) / 0.92) 0%, hsl(var(--media-scrim) / 0.6) 45%, hsl(var(--media-scrim) / 0) 75%); }
 .dr-v3 .dr-back-row { grid-column: 1; grid-row: 3; display: flex; min-width: 0; }
-.dr-v3 .dr-back { margin-top: 0; }
+.dr-v3 .dr-back { width: 100%; margin-top: 0; }
 .dr-v3 .dr-foot { grid-column: 3 / 6; grid-row: 3; flex-direction: row; align-items: center; min-height: 40px; padding-top: 0; }
 .dr-v3 .dr-foot-out, .dr-v3 .dr-foot-in { flex: 1; flex-wrap: nowrap; justify-content: flex-end; gap: 12px; min-width: 0; }
 .dr-v3 .dr-saved { margin-right: auto; min-width: 0; }
 .dr-v3 .dr-tags { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; min-height: 0; gap: 4px; }
 .dr-v3 .dr-tags span { background: hsl(var(--media-scrim) / 0.7); color: hsl(var(--on-media)); }
 .dr-v3 .dr-count { background: hsl(var(--accent)); color: hsl(var(--foreground)); } /* DS CountPill, neutral: readable in both themes */
-@container (min-width: 840px) {
+/* tooltips: for what a click would open but the prototype doesn't draw */
+.dr-tw { position: relative; display: inline-flex; }
+.dr-tw::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 10; width: max-content; max-width: 260px; padding: 6px 8px; border-radius: 6px;
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 12px; font-weight: 500; line-height: 1.4; text-align: left; white-space: normal;
+  opacity: 0; translate: 0 4px; pointer-events: none; transition: opacity 80ms ease, translate 120ms var(--ease-arrive); }
+.dr-tw[data-tip=""]::after { display: none; }
+.dr-tw-c::after { right: auto; left: 50%; translate: -50% 4px; text-align: center; }
+.dr-tw:hover::after, .dr-tw:focus-within::after, .dr-tw.show::after { opacity: 1; translate: 0 0; }
+.dr-tw-c:hover::after, .dr-tw-c:focus-within::after, .dr-tw-c.show::after { translate: -50% 0; }
+/* error and empty-allowance states: the looks pane clears for a critter, a line and one action; Try another stays, disabled */
+.dr-state { display: none; }
+.dr-v3 .dr-run[data-s="err"] :is(.dr-out-h, .dr-cards, .dr-foot), .dr-v3 .dr-run[data-s="out"] :is(.dr-out-h, .dr-cards, .dr-foot) { display: none; }
+.dr-v3 .dr-run[data-s="err"] .dr-state, .dr-v3 .dr-run[data-s="out"] .dr-state { grid-column: 3 / 6; grid-row: 1 / 4; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; animation: dr-swap 320ms var(--ease-arrive) both; }
+.dr-st-art { position: relative; display: grid; place-items: center; width: 96px; height: 96px; margin-bottom: 8px; }
+.dr-st-crit { line-height: 0; }
+.dr-st-ic { position: absolute; right: 0; bottom: 4px; display: none; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: hsl(var(--muted)); color: hsl(var(--foreground)); box-shadow: 0 0 0 3px hsl(var(--card)); }
+.dr-st-ic .ic { width: 20px; height: 20px; }
+.dr-run[data-s="err"] .dr-st-ic-err { display: grid; color: hsl(var(--destructive)); }
+.dr-run[data-s="out"] .dr-st-ic-out { display: grid; }
+.dr-st-t { max-width: 560px; font-size: 20px; font-weight: 600; line-height: 1.2; color: hsl(var(--foreground)); }
+.dr-st-s { max-width: 420px; font-size: 14px; font-weight: 500; line-height: 1.4; color: hsl(var(--muted-foreground)); }
+.dr-state .dr-tw { margin-top: 16px; }
+/* Prototype bar: a frame round the page and a toolbar, bottom right (signed in or out; what the next run does) */
+.proto-frame { position: fixed; inset: 0; z-index: 95; pointer-events: none; box-shadow: inset 0 0 0 3px hsl(var(--brand-accent-edge)); }
+.proto { position: fixed; right: 16px; bottom: 16px; z-index: 96; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; max-width: calc(100vw - 32px); padding: 8px; border-radius: 20px;
+  background: hsl(var(--popover)); box-shadow: inset 0 0 0 1px hsl(var(--border)); font-family: var(--font-sans); }
+.proto-t { padding: 0 6px 0 8px; font-size: 12px; font-weight: 600; line-height: 1.4; letter-spacing: 0.04em; text-transform: uppercase; color: hsl(var(--brand-accent-text)); }
+.proto-g { display: flex; gap: 2px; padding: 2px; border-radius: 12px; background: hsl(var(--background)); }
+.proto-g button { height: 28px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; font: inherit; font-size: 14px; font-weight: 500; line-height: 1.4; color: hsl(var(--muted-foreground)); cursor: pointer; transition: background-color 120ms ease, color 120ms ease; }
+@media (hover: hover) { .proto-g button:hover { color: hsl(var(--foreground)); } }
+.proto-g button[aria-pressed="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+.proto-g button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+@media (max-width: 1100px) { body:has(.shell-top) .proto { bottom: calc(64px + 12px + env(safe-area-inset-bottom)); } } /* clear the tab bar */
+@media (max-width: 760px) { .proto { bottom: calc(64px + 12px + env(safe-area-inset-bottom)); right: 12px; left: 12px; justify-content: center; } .proto-t { display: none; } }
+@container (min-width: 980px) {
   .dr-v3 .dr-box { height: var(--bh); }
+  .dr-v3 .dr-run { height: 100%; grid-template-rows: auto 1fr auto; }
   .dr-v3 .dr-pick, .dr-v3 .dr-zone { height: 100%; }
 }
-@container (max-width: 839px) {
+@container (max-width: 979px) {
+  .dr-v3 .dr-well { display: none; }
+  .dr-v3 .dr-back { width: auto; }
+  .dr-v3 .dr-run[data-s="err"] .dr-state, .dr-v3 .dr-run[data-s="out"] .dr-state { grid-area: 3 / 1 / 6 / 3; padding: 24px 0; }
   .dr-v3 .dr-run { grid-template-columns: 88px minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "tin tin" "ph back" "oh oh" "cards cards" "foot foot"; column-gap: 16px; row-gap: 16px; padding: 20px; }
   .dr-v3 .dr-col-t { grid-area: tin; }
   .dr-v3 .dr-div { display: none; }

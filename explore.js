@@ -743,7 +743,8 @@
   /* ---------- auth (prototype) ---------- */
   var auth = "out";
   try { if (/[?&]signedin=1/.test(location.search) || sessionStorage.getItem("sl-auth") === "in") auth = "in"; } catch (e) {}
-  function setAuth(v) { auth = v; host.setAttribute("data-auth", v); try { sessionStorage.setItem("sl-auth", v); } catch (e) {} }
+  var onAuthCb = null;
+  function setAuth(v) { auth = v; host.setAttribute("data-auth", v); try { sessionStorage.setItem("sl-auth", v); } catch (e) {} if (onAuthCb) onAuthCb(); }
   setAuth(auth);
 
   /* ---------- the brand layer ---------- */
@@ -851,6 +852,28 @@
   function left() { return ALWAYS ? 2 : Math.max(0, FREE - used()); }
   var T3 = { person: "Three new looks", product: "Three new looks", thing: "Three new looks" }; /* one snappy line; it fits the 720px card */
   function title() { return V3 ? T3[cur.kind] : KIND[cur.kind].title; }
+  /* v3: what the next run does (Prototype bar): ok | err | out. Errors and empty allowances take over the looks pane. */
+  var MODE = "ok", lastCrit = "";
+  var STATES = {
+    err: { t: "Oops, we encountered an error.", s: "Your three looks didn\u2019t come through. Give it another go.", b: "Try again", tip: "Runs the three looks again with the same photo." },
+    outOut: { t: "Oops, you\u2019re out of free generations for today.", s: "Come back later, or sign up to get free credits.", b: "Sign up", tip: "Create an account to get free credits. Opens the sign-up pop-up." },
+    outIn: { t: "Oops, you\u2019re out of credits.", s: "Upgrade or top up to keep generating.", b: "Upgrade", tip: "Get more credits to continue generating. Opens the upgrade pop-up." }
+  };
+  function showState(k) {
+    var st = $(".dr-state"); if (!st) return;
+    clear(); run.dataset.s = k;
+    var c = k === "err" ? STATES.err : auth === "in" ? STATES.outIn : STATES.outOut;
+    $(".dr-st-t", st).textContent = c.t; $(".dr-st-s", st).textContent = c.s;
+    $(".dr-st-btn", st).textContent = c.b; $(".dr-tw", st).setAttribute("data-tip", c.tip);
+    var ch = $(".dr-st-crit", st);
+    if (I && I.critter) {
+      var kinds = ["bird", "chick", "cat", "dog", "mouse", "squirrel", "fish"], p = kinds[Math.floor(Math.random() * kinds.length)];
+      if (p === lastCrit) p = kinds[(kinds.indexOf(p) + 1) % kinds.length];
+      lastCrit = p; ch.innerHTML = ""; try { ch.appendChild(I.critter(p, { size: 72 }).el); } catch (e) {}
+    }
+    dis(btnBack, true, "Sort this out first");
+    snd("tick");
+  }
 
   var box = $(".dr-box"), inp = $(".dr-zone input"), run = $(".dr-run"), ph = $(".dr-ph img"), tags = $(".dr-tags"), cards = $$(".dr-card");
   var outT = $(".dr-out-t"), outS = $(".dr-out-s"), count = $(".dr-count");
@@ -861,7 +884,7 @@
   function dis(el, on, why) { el.setAttribute("aria-disabled", on ? "true" : "false"); if (on && why) el.title = why; else el.removeAttribute("title"); }
   function sync() {
     var n = left(); count.textContent = n + " left";
-    dis(btnAgain, n === 0, "No surprises left today"); dis(btnRegen, n === 0, "No surprises left today");
+    dis(btnAgain, n === 0, "No surprises left today"); if (btnRegen) dis(btnRegen, n === 0, "No surprises left today");
   }
   function guess(img) { var r = img.naturalHeight / img.naturalWidth; return r > 1.15 ? "person" : r < 0.9 ? "product" : "thing"; }
 
@@ -877,6 +900,8 @@
   }
   function go() {
     clear(); sync();
+    if (V3) dis(btnBack, false);
+    if (V3 && MODE === "out") { tags.innerHTML = ""; showState("out"); return; }
     if (left() === 0) { run.dataset.s = "limit"; return; }
     var looks = KIND[cur.kind].order.slice((round % 2) * 3, (round % 2) * 3 + 3);
     run.dataset.s = "read"; tags.innerHTML = "";
@@ -885,6 +910,7 @@
     requestAnimationFrame(inkLoaders);
     var fast = RM ? 0.2 : 1;
     later(function () { cur.tags.forEach(function (t, i) { later(function () { tags.insertAdjacentHTML("beforeend", "<span>" + t + "</span>"); snd("tick"); }, i * 140); }); run.dataset.s = "make"; }, 1100 * fast);
+    if (V3 && MODE === "err") { later(function () { showState("err"); }, 2000 * fast); return; }
     looks.forEach(function (lk, i) {
       later(function () {
         var c = cards[i], cv = draw(lk, cur.img);
@@ -936,10 +962,13 @@
     });
   });
   btnAgain.addEventListener("click", function () { if (btnAgain.getAttribute("aria-disabled") !== "true") go(); });
-  btnRegen.addEventListener("click", function () { if (btnRegen.getAttribute("aria-disabled") !== "true") go(); });
+  if (btnRegen) btnRegen.addEventListener("click", function () { if (btnRegen.getAttribute("aria-disabled") !== "true") go(); });
   btnBack.addEventListener("click", function () { clear(); host.classList.remove("res"); run.dataset.s = "idle"; sync(); });
-  $(".dr-save").addEventListener("click", function () { setAuth("in"); toast("Signed up. All three are in your Assets."); });
-  $(".dr-more").addEventListener("click", function (e) { e.preventDefault(); toast("Opens Studio with your photo, ready for more."); });
+  $(".dr-save").addEventListener("click", function () { setAuth("in"); toast("Signed up. All three are saved to your library."); });
+  function tipFlash(el) { var tw = el.closest(".dr-tw"); if (!tw) return false; tw.classList.add("show"); clearTimeout(tw._t); tw._t = setTimeout(function () { tw.classList.remove("show"); }, 2800); snd("pop"); return true; }
+  var stBtn = $(".dr-st-btn");
+  if (stBtn) stBtn.addEventListener("click", function () { if (run.dataset.s === "err") go(); else tipFlash(stBtn); });
+  $(".dr-more").addEventListener("click", function (e) { e.preventDefault(); if (V3 && tipFlash(e.currentTarget)) return; toast("Opens Studio with your photo, ready for more."); });
   cards.forEach(function (c) {
     $(".dr-open", c).addEventListener("click", function () { if (c.classList.contains("on")) toast("Opens “" + $("b", c).textContent + "” in Studio. Not built yet."); });
     $(".dr-video", c).addEventListener("click", function (e) { e.stopPropagation(); toast("Opens Video with “" + $("b", c).textContent + "” as the first frame."); });
@@ -953,6 +982,22 @@
     anim(null, 1900);
     requestAnimationFrame(function () { requestAnimationFrame(function () { host.classList.add("dr-on"); }); });
     btnBack.addEventListener("click", function () { anim("dr-back-in", 1300); });
+    /* the Prototype bar: a frame round the page and a small toolbar, bottom right */
+    var frame = doc.createElement("div"); frame.className = "proto-frame"; frame.setAttribute("aria-hidden", "true");
+    var bar = doc.createElement("div"); bar.className = "proto"; bar.setAttribute("role", "region"); bar.setAttribute("aria-label", "Prototype states");
+    bar.innerHTML = '<span class="proto-t">Prototype</span>' +
+      '<div class="proto-g" role="group" aria-label="Account" data-g="auth"><button type="button" data-v="out" data-snd="tap">Signed out</button><button type="button" data-v="in" data-snd="tap">Signed in</button></div>' +
+      '<div class="proto-g" role="group" aria-label="Next result" data-g="mode"><button type="button" data-v="ok" data-snd="tap">Works</button><button type="button" data-v="out" data-snd="tap">Out of free</button><button type="button" data-v="err" data-snd="tap">Error</button></div>';
+    doc.body.appendChild(frame); doc.body.appendChild(bar);
+    var paintBar = function () { [].forEach.call(bar.querySelectorAll("button"), function (b) { var g = b.parentNode.getAttribute("data-g"); b.setAttribute("aria-pressed", String(g === "auth" ? auth === b.getAttribute("data-v") : MODE === b.getAttribute("data-v"))); }); };
+    bar.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      var g = b.parentNode.getAttribute("data-g"), v = b.getAttribute("data-v");
+      if (g === "auth") { setAuth(v); if (run.dataset.s === "out") showState("out"); }
+      else { MODE = v; if (host.classList.contains("res") && cur) go(); }
+      paintBar();
+    });
+    onAuthCb = paintBar; paintBar();
   }
 
   /* ---------- the looks, drawn from the photo (stand-ins for the model's output) ---------- */
