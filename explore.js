@@ -721,17 +721,116 @@
   }, true);
 })();
 
-/* ---------- 0. drop hero: drop / choose / sample a photo, read it, pick three looks, draw them (stand-ins for Meta Muse) ----------
-   Ported from the boss artifact. 3 free a day (sessionStorage). The sample rail scrolls edge to edge, drags with a mouse, arrows on hover. */
+/* ---------- 0. drop hero v2: one photo in, three looks out ----------
+   The brand layer comes from SlooshInk (vendor/sloosh-ink): perched critters, the shaded photo, the notes' arrows and
+   handwriting, and a yellow pen loader per card. Without the engine everything still works, just undrawn.
+   The looks are drawn in the browser from the photo (stand-ins for Meta Muse). 3 free a day (sessionStorage).
+   Signed in or out: ?signedin=1, or Save assets (it stands in for sign up). */
 (function () {
   var doc = document, host = doc.querySelector("[data-drop]");
   if (!host || host.hidden) return;
+  var I = window.SlooshInk || null;
   var $ = function (s, r) { return (r || host).querySelector(s); }, $$ = function (s, r) { return [].slice.call((r || host).querySelectorAll(s)); };
   var snd = function (k) { if (window.slSound) window.slSound(k); };
   var RM = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var NS = "http://www.w3.org/2000/svg";
+  function mk(tag, attrs, parent) { var e = doc.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  var rough = function (d, o) { return I ? I.rough(d, o || {}) : d; };
   var toastEl = $(".dr-toast"), toastT = 0;
-  function toast(t) { toastEl.textContent = t; toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, 2600); snd("pop"); }
+  function toast(t) { toastEl.textContent = t; toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove("on"); }, 2800); snd("pop"); }
 
+  /* ---------- auth (prototype) ---------- */
+  var auth = "out";
+  try { if (/[?&]signedin=1/.test(location.search) || sessionStorage.getItem("sl-auth") === "in") auth = "in"; } catch (e) {}
+  function setAuth(v) { auth = v; host.setAttribute("data-auth", v); try { sessionStorage.setItem("sl-auth", v); } catch (e) {} }
+  setAuth(auth);
+
+  /* ---------- the brand layer ---------- */
+  function inkArt() {
+    var svg = $(".dr-art svg"); if (!svg || svg.childNodes.length) return [];
+    var paths = [], fills = [];
+    var back = mk("g", { "class": "art-back" }, svg), bk = mk("g", { transform: "rotate(9 70 36)" }, back);
+    var bd = I ? I.rectD(44, 10, 58, 48, 7) : "M51 10H95Q102 10 102 17V51Q102 58 95 58H51Q44 58 44 51V17Q44 10 51 10Z";
+    fills.push(mk("path", { d: rough(bd, { amp: 0.8 }), fill: I ? I.hatch("shadow", 1) : "hsl(0 0% 50% / .2)" }, bk));
+    paths = paths.concat(I ? I.pen(bk, bd, { cls: "ink-soft" }) : [mk("path", { d: bd, "class": "ink-soft" }, bk)]);
+    var front = mk("g", { "class": "art-front" }, svg), fr = mk("g", { transform: "rotate(-6 48 50)" }, front);
+    var fd = I ? I.rectD(14, 22, 66, 54, 7) : "M21 22H73Q80 22 80 29V69Q80 76 73 76H21Q14 76 14 69V29Q14 22 21 22Z";
+    fills.push(mk("path", { d: rough(fd, { amp: 0.6 }), style: "fill: hsl(var(--card))" }, fr));
+    paths = paths.concat(I ? I.pen(fr, fd, { cls: "ink-pen" }) : [mk("path", { d: fd, "class": "ink-pen" }, fr)]);
+    var sun = I ? I.ellipseD(64, 36, 5.5, 5.5) : "M58.5 36a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0Z";
+    fills.push(mk("path", { d: rough(sun, { amp: 0.5 }), fill: I ? I.hatch("yellow", 1) : "hsl(var(--brand-accent))" }, fr));
+    paths.push(mk("path", { d: rough("M22 68 L36 50 L46 60 L56 47 L72 68", { amp: 0.7 }), "class": "ink-soft" }, fr));
+    var arrow = mk("g", { "class": "art-arrow" }, svg);
+    paths.push(mk("path", { d: rough("M100 82 C 101 66, 99 52, 101 34", { amp: 0.6 }), "class": "ink-yellow" }, arrow));
+    paths.push(mk("path", { d: rough("M92 42 L101 32 L110 41", { amp: 0.4 }), "class": "ink-yellow" }, arrow));
+    if (I && !RM) { fills.forEach(function (f) { f.style.opacity = "0"; f.style.transition = "opacity 300ms"; }); }
+    return { paths: paths, fills: fills };
+  }
+  function inkNotes() {
+    return $$(".dr-arw").map(function (svg) {
+      var d = svg.getAttribute("data-arrow"), shaft = mk("path", { d: rough(d, { amp: 0.9 }) }, svg);
+      var L = shaft.getTotalLength ? shaft.getTotalLength() : 100, p1 = shaft.getPointAtLength(L), p0 = shaft.getPointAtLength(Math.max(0, L - 10));
+      var a = Math.atan2(p1.y - p0.y, p1.x - p0.x), hl = 11, h1 = a + Math.PI * 0.8, h2 = a - Math.PI * 0.8;
+      var hd = "M" + (p1.x + Math.cos(h1) * hl) + " " + (p1.y + Math.sin(h1) * hl) + "L" + p1.x + " " + p1.y + "L" + (p1.x + Math.cos(h2) * hl) + " " + (p1.y + Math.sin(h2) * hl);
+      var head = mk("path", { d: rough(hd, { amp: 0.4 }) }, svg);
+      return [shaft, head];
+    });
+  }
+  function hide(paths) { paths.forEach(function (p) { var L = (p.getTotalLength ? p.getTotalLength() : 100) + 2; p.style.strokeDasharray = L + " " + L; p.style.strokeDashoffset = RM ? "0" : String(L); }); }
+  function reveal(paths, dur, delay) {
+    if (I) return I.draw(paths, { dur: dur, delay: delay || 0 });
+    paths.forEach(function (p) { p.style.strokeDashoffset = "0"; }); return Promise.resolve();
+  }
+  var crits = [];
+  function inkCritters() {
+    if (!I) return;
+    $$(".dr-crit").forEach(function (n) {
+      var c = I.critter(n.getAttribute("data-crit"), { size: +n.getAttribute("data-size") || 56, flip: n.hasAttribute("data-flip"), clickable: true });
+      n.appendChild(c.el); crits.push(c);
+      n.addEventListener("click", function () { if (c.play) c.play(Math.random() > 0.5 ? "hop" : "wiggle"); snd("pop"); });
+    });
+  }
+  function startInk() {
+    var art = inkArt(), arrows = inkNotes();
+    inkCritters();
+    var all = (art.paths || []).concat.apply(art.paths || [], arrows);
+    hide(all);
+    var hands = $$(".dr-hand");
+    if (I && !RM) hands.forEach(function (h) { h.dataset.t = h.textContent; h.style.visibility = "hidden"; });
+    var shown = false;
+    var go = function () {
+      if (shown) return; shown = true;
+      reveal(art.paths || [], 800).then(function () { (art.fills || []).forEach(function (f) { f.style.opacity = "1"; }); });
+      arrows.forEach(function (ps, i) {
+        var h = hands[i];
+        setTimeout(function () {
+          if (h && I && !RM) { h.style.visibility = ""; I.write(h, h.dataset.t, { per: 34 }); }
+          reveal(ps, 620, 420);
+        }, 500 + i * 700);
+      });
+    };
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es, ob) { if (es[0].isIntersecting) { go(); ob.disconnect(); } }, { threshold: 0.3 }).observe($(".dr-stage"));
+    else go();
+  }
+  if (I && I.ready) I.ready(startInk); else startInk();
+
+  /* loaders: a sketch box (faint outline, pencil hatch) and a yellow pen line drawing left to right */
+  function inkLoaders() {
+    $$(".dr-card").forEach(function (card, i) {
+      var svg = $(".dr-sk", card), w = card.clientWidth || 200, h = card.clientHeight || 250;
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+      var box = I ? I.rectD(1.5, 1.5, w - 3, h - 3, 15) : "M0 0H" + w + "V" + h + "H0Z";
+      mk("path", { d: rough(box, { amp: 0.6 }), fill: I ? I.hatch("pen", 1, 10) : "none", opacity: "0.35" }, svg);
+      mk("path", { d: rough(box, { amp: 1 }), "class": "ink-faint" }, svg);
+      var y = h * 0.5, x0 = w * 0.16, x1 = w * 0.84, dy = h * 0.03;
+      var line = mk("path", { d: rough("M" + x0 + " " + y + " C " + (x0 + (x1 - x0) * 0.33) + " " + (y - dy) + ", " + (x0 + (x1 - x0) * 0.66) + " " + (y + dy) + ", " + x1 + " " + (y - dy * 0.4), { amp: 1.1 }), "class": "sk-line" }, svg);
+      var L = line.getTotalLength ? Math.ceil(line.getTotalLength()) + 4 : 300;
+      line.style.setProperty("--L", L + "px"); line.style.setProperty("--d", (i * 220) + "ms");
+    });
+  }
+
+  /* ---------- the flow ---------- */
   var LOOKS = {
     billboard: ["Billboard at night", "On a giant billboard in Shibuya, wet street reflections"],
     magazine: ["Magazine cover", "Glossy cover, studio flash, bold masthead"],
@@ -741,21 +840,26 @@
     neon: ["Neon portrait", "Magenta and cyan rim light, glowing sign"]
   };
   var KIND = {
-    person: { name: "a person", order: ["magazine", "neon", "polaroid", "popart", "billboard", "studio"] },
-    product: { name: "a product", order: ["billboard", "studio", "magazine", "popart", "neon", "polaroid"] },
-    thing: { name: "a thing", order: ["studio", "popart", "polaroid", "billboard", "neon", "magazine"] }
+    person: { title: "Here’s how we can picture you", order: ["magazine", "neon", "polaroid", "popart", "billboard", "studio"] },
+    product: { title: "Here’s how we can visualize your product", order: ["billboard", "studio", "magazine", "popart", "neon", "polaroid"] },
+    thing: { title: "Here’s how we can visualize your photo", order: ["studio", "popart", "polaroid", "billboard", "neon", "magazine"] }
   };
   var FREE = 3;
   function used() { var n = 0; try { n = +sessionStorage.getItem("sl-surprise") || 0; } catch (e) {} return n; }
   function use() { try { sessionStorage.setItem("sl-surprise", used() + 1); } catch (e) {} }
+  function left() { return Math.max(0, FREE - used()); }
 
-  var box = $(".dr-box"), inp = $(".dr-zone input"), run = $(".dr-run"), ph = $(".dr-ph img"), tags = $(".dr-tags"), stat = $(".dr-stat p"), bar = $(".dr-bar i"), cards = $$(".dr-card");
+  var box = $(".dr-box"), inp = $(".dr-zone input"), run = $(".dr-run"), ph = $(".dr-ph img"), tags = $(".dr-tags"), cards = $$(".dr-card");
+  var outT = $(".dr-out-t"), outS = $(".dr-out-s"), count = $(".dr-count");
+  var btnAgain = $(".dr-again"), btnRegen = $(".dr-regen"), btnBack = $(".dr-back");
   var cur = null, round = 0, timers = [];
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function clear() { timers.forEach(clearTimeout); timers = []; }
-  function say(t, s) { stat.innerHTML = t + (s ? "<small>" + s + "</small>" : ""); }
-  function grow(to, ms) { bar.style.setProperty("--grow", (RM ? 0 : ms) + "ms"); bar.style.width = to + "%"; }
-  function left() { var n = Math.max(0, FREE - used()); $(".dr-left").textContent = n ? n + " of " + FREE + " free surprises left today" : ""; }
+  function dis(el, on, why) { el.setAttribute("aria-disabled", on ? "true" : "false"); if (on && why) el.title = why; else el.removeAttribute("title"); }
+  function sync() {
+    var n = left(); count.textContent = n + " left";
+    dis(btnAgain, n === 0, "No surprises left today"); dis(btnRegen, n === 0, "No surprises left today");
+  }
   function guess(img) { var r = img.naturalHeight / img.naturalWidth; return r > 1.15 ? "person" : r < 0.9 ? "product" : "thing"; }
 
   function start(src, preset) {
@@ -764,56 +868,50 @@
       var kind = preset ? preset.kind : guess(img);
       cur = { img: img, kind: kind, tags: preset ? preset.tags : [kind === "person" ? "Person" : kind === "product" ? "Product" : "Object", img.naturalWidth >= img.naturalHeight ? "Landscape" : "Portrait", "Good light"] };
       round = 0; ph.src = src; host.classList.add("res"); go();
+      requestAnimationFrame(function () { host.scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "start" }); });
     };
     img.src = src;
   }
   function go() {
-    clear();
-    if (used() >= FREE) { run.dataset.s = "limit"; say("You’ve used today’s free surprises.", "They come back tomorrow."); left(); return; }
+    clear(); sync();
+    if (left() === 0) { run.dataset.s = "limit"; return; }
     var looks = KIND[cur.kind].order.slice((round % 2) * 3, (round % 2) * 3 + 3);
-    run.dataset.s = "read"; tags.innerHTML = ""; grow(0, 0);
-    cards.forEach(function (c) { c.classList.remove("on"); $(".dr-cv", c).innerHTML = ""; $(".dr-cap", c).innerHTML = ""; });
+    run.dataset.s = "read"; tags.innerHTML = "";
+    outT.textContent = "Making three looks…"; outS.textContent = "Reading your photo first, then Meta Muse takes three tries.";
+    cards.forEach(function (c) { c.classList.remove("on"); var cv = $(".dr-cv", c); $$("canvas", cv).forEach(function (x) { x.remove(); }); $("b", c).textContent = ""; $(".dr-cap span", c).textContent = ""; });
+    requestAnimationFrame(inkLoaders);
     var fast = RM ? 0.2 : 1;
-    say("Looking at your photo…", "Is it a person, a product or a thing?"); requestAnimationFrame(function () { grow(22, 1200 * fast); });
-    later(function () {
-      cur.tags.forEach(function (t, i) { later(function () { tags.insertAdjacentHTML("beforeend", "<span>" + t + "</span>"); snd("tick"); }, i * 140); });
-      say("Looks like " + KIND[cur.kind].name + ".", "Picking three looks from 1,200 prompts made for it."); run.dataset.s = "pick"; grow(40, 700 * fast);
-    }, 1300 * fast);
-    later(function () { run.dataset.s = "make"; say("Making your surprises…", "Meta Muse, three takes at once."); grow(92, 2200 * fast); }, 2200 * fast);
+    later(function () { cur.tags.forEach(function (t, i) { later(function () { tags.insertAdjacentHTML("beforeend", "<span>" + t + "</span>"); snd("tick"); }, i * 140); }); run.dataset.s = "make"; }, 1100 * fast);
     looks.forEach(function (lk, i) {
       later(function () {
         var c = cards[i], cv = draw(lk, cur.img);
-        $(".dr-cv", c).appendChild(cv); $(".dr-cap", c).innerHTML = "<b>" + LOOKS[lk][0] + "</b>" + LOOKS[lk][1];
-        requestAnimationFrame(function () { c.classList.add("on"); });
-        if (i === 2) { use(); round++; grow(100, 200); later(function () { run.dataset.s = used() >= FREE ? "limit" : "done"; say(cur.kind === "person" ? "Here you go. Three of you." : "Here you go. Three looks.", "Keep the ones you like, or turn one into a video."); left(); snd("pop"); }, 300); }
-      }, (3600 + i * 380) * fast);
+        $(".dr-cv", c).appendChild(cv); $("b", c).textContent = LOOKS[lk][0]; $(".dr-cap span", c).textContent = LOOKS[lk][1];
+        $(".dr-open", c).setAttribute("aria-label", "Open " + LOOKS[lk][0] + " in Studio");
+        requestAnimationFrame(function () { requestAnimationFrame(function () { c.classList.add("on"); }); });
+        if (i === 2) { use(); round++; later(function () { run.dataset.s = left() === 0 ? "limit" : "done"; outT.textContent = KIND[cur.kind].title; outS.textContent = "Three looks from one photo, made with Meta Muse."; sync(); snd("pop"); }, 400); }
+      }, (3400 + i * 450) * fast);
     });
   }
 
-  // drop, choose, or try a sample
   inp.addEventListener("change", function () { var f = inp.files && inp.files[0]; if (f) read(f); inp.value = ""; });
   function read(f) { if (!/^image\//.test(f.type)) return toast("That one isn’t a picture. Try a JPG or PNG."); var r = new FileReader(); r.onload = function () { start(r.result); }; r.readAsDataURL(f); }
-  ["dragenter", "dragover"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); box.classList.add("over"); }); });
+  ["dragenter", "dragover"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); if (!host.classList.contains("res")) box.classList.add("over"); }); });
   ["dragleave", "drop"].forEach(function (ev) { host.addEventListener(ev, function (e) { e.preventDefault(); if (ev === "dragleave" && host.contains(e.relatedTarget)) return; box.classList.remove("over"); }); });
   host.addEventListener("drop", function (e) { var f = e.dataTransfer && e.dataTransfer.files[0]; if (f) read(f); });
   $(".dr-rail").addEventListener("click", function (e) {
-    var b = e.target.closest(".dr-pill"); if (!b || moved) return;
+    var b = e.target.closest(".dr-pill"); if (!b) return;
     start(b.getAttribute("data-src"), { kind: b.getAttribute("data-kind"), tags: (b.getAttribute("data-tags") || "").split("|") });
   });
-  $(".dr-again").addEventListener("click", go);
-  $(".dr-reset").addEventListener("click", function () { clear(); host.classList.remove("res"); run.dataset.s = "idle"; });
-  $(".dr-keep").addEventListener("click", function () { toast("Sign up to keep them. They’re saved to your Assets."); });
-  $(".dr-limit").addEventListener("click", function () { toast("Sign up opens here. 50 free credits."); });
-
-  // the sample rail: scroll, drag with a mouse, arrows when there is more to see
-  var rail = $(".dr-rail"), prev = $(".dr-arr.prev"), next = $(".dr-arr.next"), moved = false, dragX = null, dragS = 0;
-  function edges() { prev.classList.toggle("can", rail.scrollLeft > 4); next.classList.toggle("can", rail.scrollLeft < rail.scrollWidth - rail.clientWidth - 4); }
-  rail.addEventListener("scroll", edges, { passive: true }); window.addEventListener("resize", edges); edges();
-  prev.addEventListener("click", function () { rail.scrollBy({ left: -rail.clientWidth * 0.7, behavior: RM ? "auto" : "smooth" }); });
-  next.addEventListener("click", function () { rail.scrollBy({ left: rail.clientWidth * 0.7, behavior: RM ? "auto" : "smooth" }); });
-  rail.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse" || e.button !== 0) return; dragX = e.clientX; dragS = rail.scrollLeft; moved = false; });
-  window.addEventListener("pointermove", function (e) { if (dragX === null) return; var d = e.clientX - dragX; if (!moved && Math.abs(d) > 5) { moved = true; rail.classList.add("drag"); } if (moved) rail.scrollLeft = dragS - d; });
-  window.addEventListener("pointerup", function () { if (dragX === null) return; dragX = null; rail.classList.remove("drag"); setTimeout(function () { moved = false; }, 0); });
+  btnAgain.addEventListener("click", function () { if (btnAgain.getAttribute("aria-disabled") !== "true") go(); });
+  btnRegen.addEventListener("click", function () { if (btnRegen.getAttribute("aria-disabled") !== "true") go(); });
+  btnBack.addEventListener("click", function () { clear(); host.classList.remove("res"); run.dataset.s = "idle"; sync(); });
+  $(".dr-save").addEventListener("click", function () { setAuth("in"); toast("Signed up. All three are in your Assets."); });
+  $(".dr-more").addEventListener("click", function (e) { e.preventDefault(); toast("Opens Studio with your photo, ready for more."); });
+  cards.forEach(function (c) {
+    $(".dr-open", c).addEventListener("click", function () { if (c.classList.contains("on")) toast("Opens “" + $("b", c).textContent + "” in Studio. Not built yet."); });
+    $(".dr-video", c).addEventListener("click", function (e) { e.stopPropagation(); toast("Opens Video with “" + $("b", c).textContent + "” as the first frame."); });
+  });
+  sync();
 
   /* ---------- the looks, drawn from the photo (stand-ins for the model's output) ---------- */
   var W = 640, H = 800;
@@ -850,9 +948,6 @@
       var b = x.createLinearGradient(0, H - 320, 0, H); b.addColorStop(0, 'rgba(0,0,0,0)'); b.addColorStop(1, 'rgba(0,0,0,.7)'); x.fillStyle = b; x.fillRect(0, H - 320, W, 320);
       x.fillStyle = '#fecc15'; x.font = '128px ' + FD; x.textBaseline = 'top'; x.fillText('SLOOSH', 28, 26);
       x.fillStyle = '#fff'; x.font = '600 18px ' + FS; x.fillText('ISSUE 01  ·  THE ONE PHOTO ISSUE', 32, 172);
-      x.textBaseline = 'alphabetic'; x.font = '44px ' + FD; var L2 = cur.kind === 'person' ? ['MAIN', 'CHARACTER'] : ['THE NEW', 'DROP']; x.fillText(L2[0], 32, H - 150); x.fillText(L2[1], 32, H - 104);
-      x.font = '600 20px ' + FS; x.fillStyle = '#fecc15'; x.fillText('Made in 9 seconds. 40 more looks inside.', 32, H - 64);
-      x.fillStyle = '#fff'; x.fillRect(W - 112, H - 92, 84, 56); x.fillStyle = '#000'; for (var i = 0; i < 26; i++) x.fillRect(W - 106 + i * 3, H - 86, i % 3 ? 1 : 2, 40);
     },
     studio: function (x, img, R) {
       var g = x.createRadialGradient(W * .3, H * .2, 40, W / 2, H / 2, H * .8); g.addColorStop(0, '#ffe3ef'); g.addColorStop(.55, '#d8dcff'); g.addColorStop(1, '#b9c8f6'); x.fillStyle = g; x.fillRect(0, 0, W, H);
@@ -866,7 +961,6 @@
       var lg = x.createLinearGradient(0, 0, W, H); lg.addColorStop(0, 'rgba(255,220,150,.35)'); lg.addColorStop(1, 'rgba(0,0,0,.25)'); x.fillStyle = lg; x.fillRect(0, 0, W, H);
       x.save(); x.translate(W / 2, H / 2 - 10); x.rotate(.05); x.shadowColor = 'rgba(0,0,0,.4)'; x.shadowBlur = 30; x.shadowOffsetY = 14; x.fillStyle = '#fbfaf6'; x.fillRect(-230, -300, 460, 590); x.shadowColor = 'transparent';
       cover(x, img, -206, -276, 412, 440); x.fillStyle = 'rgba(255,200,120,.12)'; x.fillRect(-206, -276, 412, 440);
-      x.fillStyle = '#2b2b2b'; x.font = '700 46px ' + FH; x.textAlign = 'center'; x.fillText(cur.kind === 'person' ? 'best day, honestly' : 'my favourite thing', 0, 232);
       x.rotate(-.12); x.fillStyle = 'rgba(255,248,220,.75)'; x.fillRect(-70, -322, 140, 40); x.restore();
     },
     popart: function (x, img) {
@@ -886,7 +980,6 @@
       x.save(); x.filter = 'grayscale(1) contrast(1.35) brightness(.9)'; cover(x, img, 40, 60, W - 80, H - 200, .35); x.filter = 'none';
       x.globalCompositeOperation = 'color'; var g = x.createLinearGradient(40, 0, W - 40, 0); g.addColorStop(0, '#ff2bd6'); g.addColorStop(1, '#16e0ff'); x.fillStyle = g; x.fillRect(40, 60, W - 80, H - 200); x.restore();
       x.save(); x.shadowColor = '#ff2bd6'; x.shadowBlur = 30; x.strokeStyle = '#ff7deb'; x.lineWidth = 6; rr(x, 40, 60, W - 80, H - 200, 24); x.stroke(); x.restore();
-      x.save(); x.shadowColor = '#16e0ff'; x.shadowBlur = 26; x.fillStyle = '#c9f7ff'; x.font = '700 76px ' + FH; x.textAlign = 'center'; x.fillText(cur.kind === 'person' ? 'main character' : cur.kind === 'product' ? 'new drop' : 'look at me', W / 2, H - 52); x.restore();
     }
   };
 })();
