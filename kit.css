@@ -209,6 +209,7 @@ ul, ol { list-style: none; }
 .def { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); --hov: hsl(var(--primary)); --lip: hsl(var(--primary-edge)); --shine: var(--keycap-shine-soft); }
 .ink { background: hsl(var(--ink)); color: hsl(var(--brand-accent)); --hov: hsl(var(--ink-hover)); --lip: hsl(var(--ink-edge)); --shine: var(--keycap-shine-soft); }
 .tint { background: var(--brand-accent-subtle); color: hsl(var(--brand-accent-text)); --hov: hsl(var(--y500) / 0.3); --lip: hsl(var(--y500) / 0.45); --shine: var(--keycap-shine-soft); }
+.outline { background: transparent; color: hsl(var(--brand-accent-text)); --ew: 1px; --edge: hsl(var(--brand-accent-text)); --hov: var(--brand-accent-subtle); --lip: hsl(var(--brand-accent-text)); --shine: var(--keycap-shine-soft); } /* DS4 outline: the secondary brand action */
 .onmedia { background: hsl(var(--n0)); color: hsl(var(--n950)); --hov: hsl(var(--n0)); --lip: hsl(var(--n300)); --shine: var(--keycap-shine-soft); }
 .ghost { --d: 0px; --grow: 0px; background: transparent; color: hsl(var(--muted-foreground)); box-shadow: none; }
 @media (hover: hover) { .ghost:hover { color: hsl(var(--foreground)); padding-bottom: 4px; box-shadow: none; } .ghost:hover::before, .ghost:hover::after { animation: none; } }
