@@ -935,13 +935,11 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 .pd-box { pointer-events: auto; display: flex; align-items: center; gap: 4px; width: min(400px, 100%); height: 52px; padding: 0 8px; border-radius: 999px;
   background: hsl(var(--n900) / 0.84); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
   box-shadow: 0 12px 32px -6px hsl(var(--n950) / 0.6), inset 0 0 0 1px hsl(var(--border)); transition: width 360ms var(--ease-arrive), box-shadow 200ms ease; }
-.pd-box:focus-within { width: min(560px, 100%); box-shadow: 0 12px 32px -6px hsl(var(--n950) / 0.6), inset 0 0 0 1px hsl(var(--border-strong)); }
 .pd-box .key { flex: none; border-radius: 50%; }
 .pd-box .pd-add { background: transparent; color: hsl(var(--muted-foreground)); box-shadow: none; }
 @media (hover: hover) { .pd-box .pd-add:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); } }
 .pd-box input { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 6px; border: 0; outline: 0; background: none; color: hsl(var(--foreground)); font-family: inherit; font-size: 15px; font-weight: 500; line-height: 1; }
 .pd-box input::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
-.pdock.nudge .pd-box { animation: pd-nudge 360ms var(--ease-arrive); }
 @keyframes pd-nudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 60% { transform: translateX(4px); } }
 @media (max-width: 1100px) { .shell-top .pdock { bottom: calc(64px + 16px + env(safe-area-inset-bottom)); } }
 @media (max-width: 760px) {
@@ -1009,3 +1007,66 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 .key.k56 .ic, .key.k56 .ic16 { width: 20px; height: 20px; }
 .key.k56.trail { padding-right: 20px; }
 @media (max-width: 760px) { .bn-ag .ag-copy2 { gap: 32px; } .bn-ag .agb-addr.ag-addr { height: 48px; } .bn-ag .ag-addr code { font-size: 14px; } .key.k56 { height: 48px; padding-inline: 20px; border-radius: 12px; } }
+
+.pdock.nudge .pd-box, .pd-card.nudge { animation: pd-nudge 360ms var(--ease-arrive); }
+
+/* ---------- mini prompt v2: hover or tap opens the studio composer (dev.sloosh.ai/studio) with Image / Video tabs ----------
+   The pill stays in the flow (52px); the composer sits absolutely above it, so opening never shifts the page.
+   The morph: the composer starts clipped to the pill's exact box and opens out to its own, while the pill fades. */
+.pd-stage { position: relative; display: flex; justify-content: center; width: 100%; height: 52px; }
+.pd-box { transition: opacity 180ms ease, transform 300ms var(--ease-arrive), width 360ms var(--ease-arrive); }
+.pdock.open .pd-box { opacity: 0; transform: scale(0.97); pointer-events: none; }
+.pd-big { --mw: min(400px, 100vw - 32px); position: absolute; left: 50%; bottom: 0; width: min(800px, calc(100vw - 32px)); transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px; pointer-events: none; opacity: 0;
+  clip-path: inset(calc(100% - 52px) calc((100% - var(--mw)) / 2) 0 round 26px);
+  transition: clip-path 380ms var(--ease-arrive), opacity 160ms ease; }
+.pdock.open .pd-big { pointer-events: auto; opacity: 1; clip-path: inset(-24px -24px -24px -24px round 20px); }
+.pd-big > * { opacity: 0; transform: translateY(6px); transition: opacity 160ms ease, transform 300ms var(--ease-arrive); }
+.pdock.open .pd-big > * { opacity: 1; transform: none; transition-delay: 90ms; }
+.pdock.open .pd-big > .pd-tabs { transition-delay: 140ms; }
+
+/* tabs: TextSegmentedSwitch, small */
+.pd-tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 16px; background: hsl(var(--n900) / 0.9); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px hsl(var(--border)); }
+.pd-tabs button { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: hsl(var(--muted-foreground)); transition: color 160ms ease, background-color 160ms ease; }
+.pd-tabs button .ic16 { width: 16px; height: 16px; }
+.pd-tabs button[aria-selected="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+@media (hover: hover) { .pd-tabs button:hover { color: hsl(var(--foreground)); } }
+
+/* the card: same as the studio composer (radius 20, card fill, 1px border, 16px padding, Generate on the right) */
+.pd-card { display: flex; align-items: flex-end; gap: 12px; width: 100%; padding: 16px; border-radius: 20px; background: hsl(var(--card)); box-shadow: 0 18px 40px -18px hsl(0 0% 0% / 0.7), inset 0 0 0 1px hsl(var(--border)); }
+.pd-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.pd-main textarea { width: 100%; min-height: 48px; max-height: 120px; resize: none; border: 0; outline: 0; background: none; padding: 0; color: hsl(var(--foreground)); font-family: inherit; font-size: 16px; line-height: 24px; }
+.pd-main textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.pd-ctl { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(to right, #000, #000 calc(100% - 24px), transparent); padding-right: 24px; }
+.pd-ctl::-webkit-scrollbar { display: none; }
+.pd-ctl > * { flex: none; }
+.pd-ic { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); transition: background-color 160ms ease; }
+.pd-ic svg { width: 18px; height: 18px; }
+.pd-chip { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 5px 12px 5px 5px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); font-size: 14px; font-weight: 500; white-space: nowrap; transition: background-color 160ms ease; }
+@media (hover: hover) { .pd-ic:hover, button.pd-chip:hover { background: hsl(var(--muted) / 0.8); color: hsl(var(--foreground)); } }
+button.pd-chip:active, .pd-ic:active { transform: scale(0.97); }
+.pd-tile { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border-radius: 6px; background: hsl(var(--n700)); overflow: hidden; }
+.pd-tile svg { width: 12px; height: 12px; }
+.pd-tile img { width: 12px; height: 12px; object-fit: contain; }
+.pd-tile img.mono { filter: invert(1); }
+.pd-ar { display: block; border: 1px solid currentColor; border-radius: 1px; width: 6px; height: 6px; transition: width 200ms var(--ease-arrive), height 200ms var(--ease-arrive); }
+.pd-en { padding-right: 8px; }
+.pd-sw { position: relative; width: 30px; height: 18px; border-radius: 999px; background: hsl(var(--border-strong)); transition: background-color 160ms ease; }
+.pd-sw span { position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: hsl(var(--n0)); transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 160ms ease; }
+.pd-sw[aria-checked="true"] { background: hsl(var(--brand-accent)); }
+.pd-sw[aria-checked="true"] span { transform: translateX(12px); background: hsl(var(--n950)); }
+.pd-sw:focus-visible, .pd-chip:focus-visible, .pd-ic:focus-visible, .pd-step button:focus-visible, .pd-tabs button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.pd-step { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 5px; border-radius: 12px; background: hsl(var(--muted)); color: hsl(var(--foreground-subtle)); }
+.pd-step button { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: hsl(var(--foreground)); }
+.pd-step button[aria-disabled="true"] { color: hsl(var(--n600)); cursor: default; }
+.pd-step button svg { width: 14px; height: 14px; }
+.pd-n { min-width: 30px; padding: 0 2px; text-align: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pd-gen.key { flex: none; width: 140px; height: 92px; padding: 0 8px; border-radius: 14px; font-size: 16px; font-weight: 600; --d: 4px; }
+@media (max-width: 640px) {
+  .pd-card { flex-direction: column; align-items: stretch; }
+  .pd-gen.key { width: 100%; height: 48px; border-radius: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pd-big, .pd-big > *, .pd-box { transition: opacity 150ms ease; }
+  .pd-big { clip-path: none; } .pd-big > * { transform: none; }
+}

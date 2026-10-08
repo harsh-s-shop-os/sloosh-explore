@@ -181,24 +181,110 @@
     watch();
   }
 
-  /* ---------- mini prompt: off during the first fold, then sticky at the bottom until .flow ends above the footer ---------- */
+  /* ---------- mini prompt: off during the first fold, then sticky at the bottom until .flow ends above the footer.
+     Hover (mouse) or a tap / focus on the pill opens the studio composer above it, with Image / Video tabs.
+     It closes when the pointer leaves (unless you're typing or there's a prompt), on Escape, or on a click outside. Text carries both ways. */
   var pd = doc.querySelector("[data-pdock]");
   if (pd) {
-    var pdForm = pd.querySelector("form"), pdIn = pd.querySelector("input");
+    var pdMini = pd.querySelector(".pd-box"), pdIn = pd.querySelector("#pd-in");
+    var pdBig = pd.querySelector(".pd-big"), pdCard = pd.querySelector(".pd-card"), pdTa = pd.querySelector("#pd-big-in");
+    var pdStage = pd.querySelector(".pd-stage");
+    var PD = {}; try { PD = JSON.parse(doc.getElementById("pd-data").textContent); } catch (e) {}
+    var hoverable = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    var isOpen = false, overT = 0, hovering = false;
+
+    var setOpen = function (on, focusTa) {
+      if (on && pd.classList.contains("off")) return;
+      if (on === isOpen) { if (on && focusTa) pdTa.focus(); return; }
+      isOpen = on;
+      pd.classList.toggle("open", on);
+      pdBig.inert = !on;
+      pdIn.setAttribute("aria-expanded", on ? "true" : "false");
+      if (on) {
+        if (pdIn.value && !pdTa.value) pdTa.value = pdIn.value;
+        if (focusTa) { pdTa.focus(); var L = pdTa.value.length; try { pdTa.setSelectionRange(L, L); } catch (e) {} }
+        snd("tap");
+      } else {
+        pdIn.value = pdTa.value;
+        if (pd.contains(doc.activeElement)) doc.activeElement.blur();
+      }
+    };
+    var maybeClose = function () {
+      clearTimeout(overT);
+      overT = setTimeout(function () { if (!hovering && doc.activeElement !== pdTa && !pdTa.value.trim()) setOpen(false); }, 280);
+    };
+
+    /* mouse: open on hover, close shortly after leaving (unless typing inside) */
+    if (hoverable) {
+      pdStage.addEventListener("pointerenter", function () { hovering = true; clearTimeout(overT); setOpen(true, false); });
+      pdStage.addEventListener("pointerleave", function () { hovering = false; maybeClose(); });
+    }
+    /* tap or keyboard: focusing the pill opens and moves the caret into the composer */
+    pdIn.addEventListener("focus", function () { setOpen(true, true); });
+    pdMini.addEventListener("click", function (e) { if (e.target.closest(".pd-go")) return; setOpen(true, true); });
+    pdBig.addEventListener("focusout", function () { setTimeout(function () { if (!pdBig.contains(doc.activeElement) && !hovering) setOpen(false); }, 0); });
+    doc.addEventListener("pointerdown", function (e) { if (isOpen && !pdStage.contains(e.target)) setOpen(false); });
+    doc.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen) { setOpen(false); } });
+
+    /* hidden during the first fold */
     var hero = doc.getElementById("stories");
     if (hero && "IntersectionObserver" in window) {
       new IntersectionObserver(function (es) {
         var e = es[0], off = e.isIntersecting && e.intersectionRatio > 0.4;
         if (off && pd.contains(doc.activeElement)) return;
         pd.classList.toggle("off", off);
+        if (off) setOpen(false);
       }, { threshold: [0, 0.4, 0.6] }).observe(hero);
     } else pd.classList.remove("off");
-    pdForm.addEventListener("submit", function (e) {
+
+    /* Image / Video: each keeps its own model, ratio, quality and count / duration */
+    var state = {}, mode = "image";
+    Object.keys(PD).forEach(function (k) { var d = PD[k]; state[k] = { m: 0, ar: 0, q: d.q0 || 0, n: d.n0 || d.n[0] }; });
+    var logo = pd.querySelector("[data-pd-logo]"), V = function (k) { return pd.querySelector('[data-pd-v="' + k + '"]'); };
+    var arBox = pd.querySelector(".pd-ar"), dec = pd.querySelector('[data-pd="dec"]'), inc = pd.querySelector('[data-pd="inc"]');
+    var render = function () {
+      var d = PD[mode], st = state[mode]; if (!d) return;
+      var mo = d.models[st.m];
+      V("model").textContent = mo.name; logo.src = mo.logo; logo.classList.toggle("mono", !!mo.mono);
+      var ar = d.ar[st.ar]; V("ar").textContent = ar;
+      var wh = ar.split(":").map(Number), big = Math.max(wh[0], wh[1]);
+      arBox.style.width = Math.round(8 * wh[0] / big) + "px"; arBox.style.height = Math.round(8 * wh[1] / big) + "px";
+      pd.querySelector('[data-pd="ar"]').setAttribute("aria-label", "Aspect ratio: " + ar);
+      V("q").textContent = d.q[st.q]; pd.querySelector('[data-pd="q"]').setAttribute("aria-label", (mode === "video" ? "Resolution: " : "Quality: ") + d.q[st.q]);
+      V("n").textContent = d.unit === "s" ? st.n + "s" : st.n + " " + d.unit + (st.n > 1 ? "s" : "");
+      dec.setAttribute("aria-label", d.unit === "s" ? "Shorter" : "Fewer"); inc.setAttribute("aria-label", d.unit === "s" ? "Longer" : "More");
+      dec.setAttribute("aria-disabled", st.n <= d.n[0] ? "true" : "false"); inc.setAttribute("aria-disabled", st.n >= d.n[1] ? "true" : "false");
+      pd.querySelectorAll("[data-pd-mode]").forEach(function (b) { var on = b.getAttribute("data-pd-mode") === mode; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
+    };
+    pd.querySelectorAll("[data-pd-mode]").forEach(function (b) {
+      b.addEventListener("click", function () { mode = b.getAttribute("data-pd-mode"); render(); });
+      b.addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        e.preventDefault(); mode = mode === "image" ? "video" : "image"; render(); pd.querySelector('[data-pd-mode="' + mode + '"]').focus();
+      });
+    });
+    var cyc = function (k, len) { state[mode][k] = (state[mode][k] + 1) % len; render(); };
+    pd.querySelector('[data-pd="model"]').addEventListener("click", function () { cyc("m", PD[mode].models.length); });
+    pd.querySelector('[data-pd="ar"]').addEventListener("click", function () { cyc("ar", PD[mode].ar.length); });
+    pd.querySelector('[data-pd="q"]').addEventListener("click", function () { cyc("q", PD[mode].q.length); });
+    dec.addEventListener("click", function () { var st = state[mode]; if (st.n > PD[mode].n[0]) { st.n--; render(); } });
+    inc.addEventListener("click", function () { var st = state[mode]; if (st.n < PD[mode].n[1]) { st.n++; render(); } });
+    var sw = pd.querySelector(".pd-sw");
+    sw.addEventListener("click", function () { sw.setAttribute("aria-checked", sw.getAttribute("aria-checked") === "true" ? "false" : "true"); });
+    render();
+
+    /* the textarea grows with the prompt, up to 120px */
+    pdTa.addEventListener("input", function () { pdTa.style.height = "auto"; pdTa.style.height = Math.min(pdTa.scrollHeight, 120) + "px"; pdIn.value = pdTa.value; });
+    pdTa.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); pdCard.requestSubmit ? pdCard.requestSubmit() : pdCard.dispatchEvent(new Event("submit")); } });
+
+    var nudge = function (el) { el.classList.remove("nudge"); void el.offsetWidth; el.classList.add("nudge"); snd("tick"); };
+    pdMini.addEventListener("submit", function (e) { e.preventDefault(); setOpen(true, true); });
+    pdCard.addEventListener("submit", function (e) {
       e.preventDefault();
-      var go = pd.querySelector(".pd-go");
-      if (!pdIn.value.trim()) { pdIn.focus(); pd.classList.remove("nudge"); void pd.offsetWidth; pd.classList.add("nudge"); snd("tick"); return; }
+      var go = pd.querySelector(".pd-gen");
+      if (!pdTa.value.trim()) { pdTa.focus(); nudge(pdCard); return; }
       go.setAttribute("data-busy", ""); snd("pop");
-      setTimeout(function () { go.removeAttribute("data-busy"); pdIn.value = ""; pdIn.blur(); }, 900);
+      setTimeout(function () { go.removeAttribute("data-busy"); pdTa.value = ""; pdIn.value = ""; pdTa.style.height = ""; }, 900);
     });
   }
 
