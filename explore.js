@@ -1,6 +1,6 @@
 /* Sloosh Explore: page behaviours (kit.js handles theme, sounds, logo eyes, arrivals, hover video).
-   - stories: tap right for next, left for previous, press and hold to pause, swipe on touch,
-     arrow keys, click a peeking story to jump to it; each story times itself (data-dur)
+   - stories: one banner; tap right for next, left for previous, press and hold to pause, swipe on touch,
+     arrow keys, click a tab to jump to that story; each story times itself (data-dur)
    - tabs (series, tools, agent steps)
    - copy the MCP server address
    - click sounds for the page's own controls */
@@ -13,12 +13,12 @@
   var root = doc.querySelector("[data-stories]");
   if (root) {
     var cards = [].slice.call(root.querySelectorAll(".st"));
-    var bars = [].slice.call(root.querySelectorAll(".st-bar i"));
+    var tabs = [].slice.call(root.querySelectorAll(".st-tab"));
+    var bars = tabs.map(function (t) { return t.querySelector("i"); });
     var live = root.querySelector("[data-st-live]");
     var pauseBtn = root.querySelector(".st-pause");
     var n = cards.length, i = 0, timer = 0, startAt = 0, remain = 0;
     var paused = false, hold = false, inView = true;
-    var D = cards.map(function (_, k) { return k > n / 2 ? k - n : k; });
 
     var play = function (v) { v.muted = true; var p = v.play(); if (p && p.catch) p.catch(function () {}); };
     var stalled = function () { return paused || hold || !inView || doc.hidden; };
@@ -44,21 +44,8 @@
     function go(to, byUser) {
       i = ((to % n) + n) % n;
       cards.forEach(function (c, k) {
-        // offset from the story in front, kept within half the ring; of the two ways round, take the nearer one
-        var r = ((k - i) % n + n) % n, a = r, b = r - n, h = n / 2;
-        var d = Math.abs(a) > h ? b : Math.abs(b) > h ? a : (Math.abs(a - D[k]) <= Math.abs(b - D[k]) ? a : b);
-        if (Math.abs(d - D[k]) > 1) {
-          // a wrap or a long jump: enter from just off screen instead of sliding across
-          c.style.transition = "none";
-          c.style.setProperty("--d", d > 0 ? 2 : -2);
-          void c.offsetWidth;
-          c.style.transition = "";
-        }
-        D[k] = d;
-        c.style.setProperty("--d", d);
+        var d = k === i ? 0 : 1;
         c.classList.toggle("on", d === 0);
-        c.classList.toggle("nb", Math.abs(d) === 1);
-        c.classList.toggle("far", Math.abs(d) > 1);
         c.setAttribute("aria-hidden", d === 0 ? "false" : "true");
         c.querySelectorAll("a, button:not(.st-tap)").forEach(function (el) { el.tabIndex = d === 0 ? 0 : -1; });
         var v = c.querySelector("video");
@@ -68,7 +55,7 @@
       });
       var dur = +cards[i].getAttribute("data-dur") || 7000;
       root.style.setProperty("--dur", dur + "ms");
-      bars.forEach(function (bar, k) { bar.classList.toggle("done", k < i); bar.classList.remove("cur"); });
+      bars.forEach(function (bar, k) { bar.classList.toggle("done", k < i); bar.classList.remove("cur"); tabs[k].setAttribute("aria-current", k === i ? "true" : "false"); });
       void bars[i].offsetWidth;
       bars[i].classList.add("cur");
       remain = dur;
@@ -112,9 +99,9 @@
       if (e.target.closest(".st-arrow.prev")) { go(i - 1, true); return; }
       if (e.target.closest(".st-arrow.next")) { go(i + 1, true); return; }
       if (e.target.closest(".st-pause")) { setPaused(!paused); return; }
-      if (e.target.classList.contains("st-tap")) return; // handled on pointerup (the card may already be a neighbour)
-      var c = e.target.closest(".st.nb");
-      if (c) { e.preventDefault(); go(cards.indexOf(c), true); }
+      if (e.target.classList.contains("st-tap")) return; // handled on pointerup
+      var t = e.target.closest(".st-tab");
+      if (t) { go(+t.getAttribute("data-go"), true); }
     });
     root.addEventListener("keydown", function (e) {
       if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1, true); }
@@ -185,6 +172,6 @@
   doc.addEventListener("pointerdown", function (e) {
     var t = e.target;
     if (!t.closest || t.closest("[data-snd], .key, .nl, .chip, .seg button, .mrow, .prow, .st-tap")) return;
-    if (t.closest(".tabs button, .ag-tabs button, .si, .si-add, .tb, .mr, .tool, .mc, .ep-more, .st.nb, .st-arrow, .ft-cols a")) snd("tap");
+    if (t.closest(".tabs button, .ag-tabs button, .si, .si-add, .tb, .mr, .tool, .mc, .ep-more, .st-tab, .st-arrow, .ft-cols a")) snd("tap");
   }, true);
 })();
