@@ -3,10 +3,14 @@
    - An icon moves only when you hover or press the thing it sits in, or when something you clicked
      swaps it for another icon. Nothing moves on scroll or on appear. One exception: the Sparkle on
      "Try Gemini Omni" twinkles on its own every few seconds while it's on screen.
-   - The motion says what the icon means. The same icon moves the same way everywhere.
-   - Styles: H fly-through, C rotation, D part move, A draw, E swap, G idle.
+   - Default: the icon REDRAWS itself (each stroke draws in, one part after another).
+     Plus, minus and other plain icons never rotate.
+   - Only icons whose object has an obvious action do that action (plug plugs in, link joins,
+     camera records, lock locks, a bell would ring, a bulb would light...).
+   - Arrows nudge on hover; on press they fly out and come back in from the other side.
+   - Chevrons that open something (menus, accordions) rotate with that state.
    - The button's own press (the keycap going down) is the button's job, not the icon's.
-   Every keyframe ends where it started, so dropping .im-on never jumps. */
+   Every keyframe ends where it started, so dropping the class never jumps. */
 
 :root {
   --im-in: cubic-bezier(0.23, 1, 0.32, 1);      /* arrive (same as --ease-arrive) */
@@ -16,12 +20,25 @@
 svg[data-im] { overflow: visible; }
 svg[data-im] .im-a, svg[data-im] [data-p] { transform-box: view-box; }
 
-/* ---------- A. draw: the stroke draws itself (paths carry pathLength="1") ---------- */
+/* ---------- DRAW (default): every part redraws, one after another (paths carry pathLength="1", JS sets --i) ---------- */
 @keyframes im-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes im-fade-draw { 0% { stroke-dashoffset: 1; opacity: 1; } 70% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+:is(svg[data-im="plus"], svg[data-im="add"], svg[data-im="minus"], svg[data-im="sun"], svg[data-im="moon"],
+    svg[data-im="play"], svg[data-im="pause"], svg[data-im="image1"], svg[data-im="image2"], svg[data-im="imgadd"],
+    svg[data-im="folderadd"], svg[data-im="folder"], svg[data-im="tick"], svg[data-im="diamond"], svg[data-im="info"],
+    svg[data-im="home"], svg[data-im="crown"], svg[data-im="userstar"], svg[data-im="aivideo"], svg[data-im="workflow"],
+    svg[data-im="share"], svg[data-im="grid"]).im-on [data-p] {
+  stroke-dasharray: 1;
+  animation: im-draw 440ms var(--im-io) calc(var(--i, 0) * 60ms) both;
+}
 
-/* ---------- H. fly-through: leave the way it points, come back from the other side ---------- */
+/* ---------- arrows: nudge on hover, fly-through on press ---------- */
 svg[data-im="chev-r"], svg[data-im="chev-l"], svg[data-im="arrow-up"] { overflow: hidden; }
+@keyframes im-nudge-r { 0% { transform: none; } 40% { transform: translateX(2.5px); } 100% { transform: none; } }
+@keyframes im-nudge-l { 0% { transform: none; } 40% { transform: translateX(-2.5px); } 100% { transform: none; } }
+@keyframes im-nudge-u { 0% { transform: none; } 40% { transform: translateY(-2.5px); } 100% { transform: none; } }
+svg[data-im="chev-r"].im-on .im-a { animation: im-nudge-r 420ms var(--im-io) both; }
+svg[data-im="chev-l"].im-on .im-a { animation: im-nudge-l 420ms var(--im-io) both; }
+svg[data-im="arrow-up"].im-on .im-a { animation: im-nudge-u 420ms var(--im-io) both; }
 @keyframes im-fly-r {
   0% { transform: translateX(0); opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
   38% { transform: translateX(16px); opacity: 0; }
@@ -40,67 +57,25 @@ svg[data-im="chev-r"], svg[data-im="chev-l"], svg[data-im="arrow-up"] { overflow
   38.1% { transform: translateY(18px); opacity: 0; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
   100% { transform: translateY(0); opacity: 1; }
 }
-svg[data-im="chev-r"].im-on .im-a { animation: im-fly-r 460ms both; }
-svg[data-im="chev-l"].im-on .im-a { animation: im-fly-l 460ms both; }
-svg[data-im="arrow-up"].im-on .im-a { animation: im-fly-u 460ms both; }
+svg[data-im="chev-r"].im-fly .im-a { animation: im-fly-r 460ms both; }
+svg[data-im="chev-l"].im-fly .im-a { animation: im-fly-l 460ms both; }
+svg[data-im="arrow-up"].im-fly .im-a { animation: im-fly-u 460ms both; }
 
-/* ---------- C. rotation ---------- */
-@keyframes im-turn90 { from { transform: rotate(0); } to { transform: rotate(90deg); } }
-@keyframes im-turn180 { from { transform: rotate(0); } to { transform: rotate(180deg); } }
-/* plus adds: a quarter turn with a small overshoot (a plus looks the same after 90°) */
-svg[data-im="plus"].im-on .im-a, svg[data-im="add"].im-on .im-a { transform-origin: 12px 12px; animation: im-turn90 480ms var(--im-hop) both; }
-/* reload / repeat: a half turn (both look the same after 180°) */
-svg[data-im="reload"].im-on .im-a, svg[data-im="repeat"].im-on .im-a { transform-origin: 12px 12px; animation: im-turn180 560ms var(--im-hop) both; }
-/* moon rocks back and forth */
-@keyframes im-rock { 0% { transform: rotate(0); } 35% { transform: rotate(-26deg); } 70% { transform: rotate(8deg); } 100% { transform: rotate(0); } }
-svg[data-im="moon"].im-on .im-a { transform-origin: 12px 12px; animation: im-rock 600ms var(--im-io) both; }
-/* clock: the hands sweep one full turn */
-@keyframes im-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-svg[data-im="clock"].im-on [data-p="1"] { transform-origin: 12px 12px; animation: im-spin 640ms var(--im-io) both; }
-
-/* ---------- D. part move ---------- */
-@keyframes im-pop { 0% { transform: scale(1); } 35% { transform: scale(0.7); } 100% { transform: scale(1); } }
-@keyframes im-pop-in { from { transform: scale(0.55); } to { transform: scale(1); } }
+/* ---------- contextual: the object does its own action ---------- */
 @keyframes im-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
-@keyframes im-rise { from { transform: translateY(5px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes im-settle { from { transform: translateY(1.5px); } to { transform: translateY(0); } }
+@keyframes im-turn180 { from { transform: rotate(0); } to { transform: rotate(180deg); } }
+@keyframes im-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
-/* minus takes away: it squeezes, then springs back */
-@keyframes im-squeeze { 0% { transform: scaleX(1); } 40% { transform: scaleX(0.4); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: scaleX(1); } }
-svg[data-im="minus"].im-on .im-a { transform-origin: 12px 12px; animation: im-squeeze 420ms both; }
-
-/* sun: the rays turn an eighth (they look the same after 45°), the core breathes */
-svg[data-im="sun"].im-on [data-p="1"] { transform-origin: 12px 12px; animation: im-turn45 560ms var(--im-hop) both; }
-svg[data-im="sun"].im-on [data-p="0"] { transform-origin: 12px 12px; animation: im-pop 460ms var(--im-in) both; }
-@keyframes im-turn45 { from { transform: rotate(0); } to { transform: rotate(45deg); } }
-
-/* pause: the two bars dip one after the other */
-@keyframes im-dip { 0% { transform: scaleY(1); } 40% { transform: scaleY(0.55); } 100% { transform: scaleY(1); } }
-svg[data-im="pause"].im-on [data-p] { transform-origin: 12px 12px; animation: im-dip 320ms var(--im-in) both; }
-svg[data-im="pause"].im-on [data-p="1"] { animation-delay: 90ms; }
+/* reload / repeat go round (a half turn; both look the same after 180°) */
+svg[data-im="reload"].im-on .im-a, svg[data-im="repeat"].im-on .im-a { transform-origin: 12px 12px; animation: im-turn180 560ms var(--im-hop) both; }
+/* clock: the hands sweep one lap */
+svg[data-im="clock"].im-on [data-p="1"] { transform-origin: 12px 12px; animation: im-spin 640ms var(--im-io) both; }
 
 /* video camera: the lens pushes out (zoom), the record dot blinks */
 @keyframes im-lens { 0% { transform: translateX(0); } 35% { transform: translateX(2.5px); } 100% { transform: translateX(0); } }
 @keyframes im-blink { 0%, 100% { opacity: 1; } 20%, 50% { opacity: 0; } 35%, 70% { opacity: 1; } }
 svg[data-im="video"].im-on [data-p="1"] { animation: im-lens 520ms var(--im-hop) both; }
 svg[data-im="video"].im-on [data-p="2"] { animation: im-blink 560ms linear both; }
-
-/* image: the sun rises, the hills settle */
-svg[data-im="image2"].im-on [data-p="1"], svg[data-im="image1"].im-on [data-p="0"] { animation: im-rise 500ms var(--im-in) both; }
-svg[data-im="image2"].im-on [data-p="0"], svg[data-im="image1"].im-on [data-p="2"] { animation: im-settle 420ms var(--im-in) both; }
-
-/* image / folder with a plus: the plus does the plus move */
-svg[data-im="imgadd"].im-on [data-p="2"] { transform-origin: 18px 6px; animation: im-turn90 480ms var(--im-hop) both; }
-svg[data-im="folderadd"].im-on [data-p="1"] { transform-origin: 18px 17px; animation: im-turn90 480ms var(--im-hop) both; }
-svg[data-im="folderadd"].im-on [data-p="0"] { transform-origin: 12px 21px; animation: im-catch 500ms both; }
-
-/* folder: something lands in it (squash, then spring back) */
-@keyframes im-catch {
-  0% { transform: none; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
-  30% { transform: translateY(1px) scale(1.07, 0.86); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
-  100% { transform: none; }
-}
-svg[data-im="folder"].im-on .im-a { transform-origin: 12px 21px; animation: im-catch 500ms both; }
 
 /* copy: the front sheet slides out of the back one */
 @keyframes im-dupe { 0% { transform: translate(0, 0); opacity: 1; } 22% { transform: translate(-5px, -5px); opacity: 0; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: translate(0, 0); opacity: 1; } }
@@ -112,7 +87,7 @@ svg[data-im="copy"].im-on [data-p="0"] { animation: im-dupe 480ms var(--im-in) b
 svg[data-im="link"].im-on [data-p="0"] { animation: im-link-a 520ms var(--im-io) both; }
 svg[data-im="link"].im-on [data-p="1"] { animation: im-link-b 520ms var(--im-io) both; }
 
-/* sparkles: each star shrinks and turns a quarter (looks the same after 90°), the small one a beat later */
+/* sparkles twinkle: each star shrinks and turns a quarter (looks the same after 90°), the small one a beat later */
 @keyframes im-twinkle { 0% { transform: scale(1) rotate(0); } 35% { transform: scale(0.5) rotate(40deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: scale(1) rotate(90deg); } }
 svg[data-im="sparkles"].im-on [data-p="0"] { transform-origin: 15px 9px; animation: im-twinkle 560ms var(--im-in) both; }
 svg[data-im="sparkles"].im-on [data-p="1"] { transform-origin: 7px 17px; animation: im-twinkle 560ms var(--im-in) 90ms both; }
@@ -127,61 +102,16 @@ svg[data-im="plug"].im-on [data-p="2"] { transform-origin: 12px 22px; animation:
 @keyframes im-swirl { 0% { transform: rotate(0); } 30% { transform: rotate(16deg); } 65% { transform: rotate(-8deg); } 100% { transform: rotate(0); } }
 svg[data-im="flask"].im-on :is([data-p="1"], [data-p="3"]) { transform-origin: 14px 4px; animation: im-swirl 620ms var(--im-io) both; }
 
-/* spaces (workflow): the boxes light up in order, the links draw between them */
-svg[data-im="workflow"] :is([data-p="0"], [data-p="1"], [data-p="2"]) { transform-box: fill-box; transform-origin: center; }
-svg[data-im="workflow"].im-on :is([data-p="0"], [data-p="1"], [data-p="2"]) { animation: im-pop-in 320ms var(--im-hop) both; }
-svg[data-im="workflow"].im-on [data-p="1"] { animation-delay: 180ms; }
-svg[data-im="workflow"].im-on [data-p="2"] { animation-delay: 360ms; }
-svg[data-im="workflow"].im-on :is([data-p="3"], [data-p="4"]) { stroke-dasharray: 1; animation: im-draw 220ms var(--im-in) 100ms both; }
-svg[data-im="workflow"].im-on [data-p="4"] { animation-delay: 280ms; }
-
 /* agents (chat): the bubble leans in like it's talking, the letters write themselves */
 @keyframes im-talk { 0% { transform: none; } 40% { transform: rotate(-7deg) scale(1.06); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
 svg[data-im="aichat"].im-on [data-p="0"] { transform-origin: 3px 21px; animation: im-talk 520ms var(--im-in) both; }
 svg[data-im="aichat"].im-on [data-p="1"] { stroke-dasharray: 1; animation: im-draw 420ms var(--im-in) 80ms both; }
 
-/* ai video: the play pops, the spark twinkles */
-svg[data-im="aivideo"].im-on [data-p="0"] { transform-origin: 11.5px 12.5px; animation: im-pop 460ms var(--im-in) both; }
-svg[data-im="aivideo"].im-on [data-p="2"] { transform-origin: 18.5px 5.5px; animation: im-twinkle 560ms var(--im-in) 60ms both; }
-
-/* cast (user + star): the star spins a lap (looks the same every 72°), the head nods */
-@keyframes im-star { 0% { transform: rotate(0) scale(1); } 40% { transform: rotate(80deg) scale(0.6); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: rotate(144deg) scale(1); } }
-@keyframes im-nod { 0% { transform: none; } 35% { transform: translateY(-1.2px); } 100% { transform: none; } }
-svg[data-im="userstar"].im-on [data-p="2"] { transform-origin: 17.25px 18.2px; animation: im-star 600ms var(--im-in) both; }
-svg[data-im="userstar"].im-on [data-p="1"] { animation: im-nod 420ms var(--im-hop) 60ms both; }
-
-/* home: a little hop and land */
-@keyframes im-hop {
-  0% { transform: none; animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1); }
-  30% { transform: translateY(-3px) scale(0.96, 1.04); animation-timing-function: cubic-bezier(0.32, 0, 0.67, 0); }
-  55% { transform: translateY(0) scale(1.08, 0.9); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
-  100% { transform: none; }
-}
-svg[data-im="home"].im-on .im-a { transform-origin: 12px 21.5px; animation: im-hop 540ms both; }
-
 /* docs (book): the right page lifts like it's being turned */
 @keyframes im-page { 0% { transform: scaleX(1); } 45% { transform: scaleX(0.15) skewY(-6deg); } 100% { transform: scaleX(1); } }
 svg[data-im="book"].im-on [data-p="1"] { transform-origin: 12px 12px; animation: im-page 560ms var(--im-io) both; }
 
-/* upgrade (crown): the crown lifts and tips, the gem glints */
-@keyframes im-tip { 0% { transform: none; } 35% { transform: translateY(-2.5px) rotate(-8deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
-svg[data-im="crown"].im-on [data-p="2"] { transform-origin: 12px 17px; animation: im-tip 540ms var(--im-in) both; }
-svg[data-im="crown"].im-on [data-p="1"] { transform-origin: 12px 12.75px; animation: im-pulse 420ms var(--im-in) 80ms both; }
-
-/* share: the left dot pings, the lines draw out, the right dots ping back */
-svg[data-im="share"] :is([data-p="0"], [data-p="1"], [data-p="2"]) { transform-box: fill-box; transform-origin: center; }
-svg[data-im="share"].im-on [data-p="1"] { animation: im-pulse 300ms var(--im-in) both; }
-svg[data-im="share"].im-on [data-p="3"] { stroke-dasharray: 1; animation: im-draw 260ms var(--im-in) 100ms both; }
-svg[data-im="share"].im-on :is([data-p="0"], [data-p="2"]) { animation: im-pulse 300ms var(--im-in) 280ms both; }
-
-/* grid: the tiles pop in, clockwise */
-svg[data-im="grid"] [data-p] { transform-box: fill-box; transform-origin: center; }
-svg[data-im="grid"].im-on [data-p] { animation: im-pop-in 320ms var(--im-hop) both; }
-svg[data-im="grid"].im-on [data-p="1"] { animation-delay: 60ms; }
-svg[data-im="grid"].im-on [data-p="3"] { animation-delay: 120ms; }
-svg[data-im="grid"].im-on [data-p="2"] { animation-delay: 180ms; }
-
-/* mouse click: the mouse clicks down, the click mark flashes */
+/* mouse click: the mouse clicks down, the click mark draws */
 @keyframes im-click { 0% { transform: none; } 25% { transform: translateY(1.2px); } 100% { transform: none; } }
 svg[data-im="mouse"].im-on :is([data-p="0"], [data-p="2"], [data-p="3"]) { animation: im-click 420ms var(--im-in) both; }
 svg[data-im="mouse"].im-on [data-p="1"] { stroke-dasharray: 1; animation: im-draw 300ms var(--im-in) 90ms both; }
@@ -205,24 +135,14 @@ svg[data-im="wand"].im-on [data-p="1"] { animation: im-spark 480ms var(--im-in) 
 svg[data-im="wand"].im-on [data-p="2"] { animation: im-spark 480ms var(--im-in) 160ms both; }
 svg[data-im="wand"].im-on [data-p="3"] { animation: im-spark 480ms var(--im-in) 220ms both; }
 
-/* info: the dot hops */
-@keyframes im-dot { 0% { transform: none; } 35% { transform: translateY(-2.5px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
-svg[data-im="info"].im-on [data-p="2"] { animation: im-dot 460ms var(--im-in) both; }
-
 /* lock: the shackle lifts and clicks shut */
-svg[data-im="lock"].im-on [data-p="1"] { animation: im-dot 500ms var(--im-in) both; }
+@keyframes im-lift { 0% { transform: none; } 35% { transform: translateY(-2.5px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
+svg[data-im="lock"].im-on [data-p="1"] { animation: im-lift 500ms var(--im-in) both; }
 
 /* card: a swipe */
 @keyframes im-swipe { 0% { transform: none; } 35% { transform: translateX(2.5px) rotate(-5deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); } 100% { transform: none; } }
 svg[data-im="card"].im-on .im-a { transform-origin: 12px 12px; animation: im-swipe 480ms var(--im-in) both; }
 
-/* ---------- A. draw ---------- */
-svg[data-im="tick"].im-on [data-p="0"] { stroke-dasharray: 1; animation: im-draw 420ms var(--im-in) both; }
-svg[data-im="diamond"].im-on [data-p="0"] { stroke-dasharray: 1; animation: im-draw 480ms var(--im-io) both; }
-/* play: the triangle traces itself from the tip, with a small kick forward */
-@keyframes im-kick { from { transform: translateX(-1.5px); } to { transform: none; } }
-svg[data-im="play"].im-on [data-p="0"] { stroke-dasharray: 1; animation: im-draw 460ms var(--im-io) both, im-kick 460ms var(--im-hop) both; }
-
-/* ---------- E. swap: the incoming icon blurs and scales in ---------- */
+/* ---------- swap: the incoming icon blurs and scales in ---------- */
 @keyframes im-swap { from { opacity: 0; transform: scale(0.5); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 svg[data-im].im-sw { animation: im-swap 300ms var(--im-in) both; }

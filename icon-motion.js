@@ -2,6 +2,9 @@
    Finds every Hugeicons icon, names it, splits it into parts, and plays its motion
    when you hover or press the thing it sits in. When a click swaps one icon for another
    (play/pause, sun/moon, copy/tick), the new one blurs in and plays its own motion.
+   Default is DRAW (the strokes redraw, part by part). Only icons whose object has an obvious
+   action get their own move (plug plugs in, link joins, camera records...). Arrows nudge on hover
+   and fly out and back in on press. Chevrons that open things rotate with the state (CSS in kit.css).
    The motions themselves live in icon-motion.css. */
 (function () {
   var doc = document;
@@ -50,6 +53,12 @@
     card:       ["M2 12C2 8.46252", null, 480]
   };
   var NAMES = Object.keys(ICONS);
+  // icons that simply redraw themselves (the default when an icon has no obvious action of its own)
+  var DRAW = { plus: 1, add: 1, minus: 1, sun: 1, moon: 1, play: 1, pause: 1, image1: 1, image2: 1, imgadd: 1, folderadd: 1, folder: 1,
+    tick: 1, diamond: 1, info: 1, home: 1, crown: 1, userstar: 1, aivideo: 1, workflow: 1, share: 1, grid: 1 };
+  // arrows: nudge on hover, fly out and back in on press
+  var ARROW = { "chev-r": 1, "chev-l": 1, "arrow-up": 1 };
+  var DRAW_MS = 440, DRAW_STEP = 60;
   // what counts as "the thing the icon sits in": anything you can hover or press, plus tags and small labelled lines
   var HOST = "a,button,[role=button],[role=tab],[role=radio],[role=switch],[role=checkbox],label,summary,.pd-chip,.eyebrow,.dr-fine > span,[data-im-host]";
   // icons inside the scripted motion scenes follow the scene, not the pointer
@@ -74,24 +83,29 @@
     if (!parts.length) { svg.setAttribute("data-im-x", ""); return; }
     var g = doc.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute("class", "im-a");
-    parts.forEach(function (p, i) { p.setAttribute("data-p", i); p.setAttribute("pathLength", "1"); g.appendChild(p); });
+    parts.forEach(function (p, i) { p.setAttribute("data-p", i); p.setAttribute("pathLength", "1"); p.style.setProperty("--i", i); g.appendChild(p); });
+    svg._imN = parts.length;
     svg.appendChild(g);
     svg.setAttribute("data-im", n);
   }
   function scan() { doc.querySelectorAll('svg[viewBox="0 0 24 24"]:not([data-im]):not([data-im-x])').forEach(tag); }
 
   /* play one icon's motion; a motion already running finishes first (no stutter on quick re-hovers) */
-  function play(svg) {
-    if (svg._im) return;
-    var r = ICONS[svg.getAttribute("data-im")]; if (!r) return;
-    svg.classList.remove("im-on"); void svg.getBoundingClientRect(); svg.classList.add("im-on");
-    svg._im = setTimeout(function () { svg.classList.remove("im-on"); svg._im = 0; }, r[2] + 40);
+  function play(svg, press) {
+    var n = svg.getAttribute("data-im"), r = ICONS[n]; if (!r) return;
+    var fly = press && ARROW[n];
+    if (svg._im && !fly) return;                     // let a running motion finish (no stutter on quick re-hovers)
+    clearTimeout(svg._im);
+    var cls = fly ? "im-fly" : "im-on";
+    var ms = fly ? 460 : DRAW[n] ? DRAW_MS + DRAW_STEP * ((svg._imN || 1) - 1) : r[2];
+    svg.classList.remove("im-on", "im-fly"); void svg.getBoundingClientRect(); svg.classList.add(cls);
+    svg._im = setTimeout(function () { svg.classList.remove(cls); svg._im = 0; }, ms + 40);
   }
   function shown(el) { return el.getClientRects().length > 0; }
   function iconsOf(host) {
     return [].filter.call(host.querySelectorAll("svg[data-im]"), function (s) { return s.closest(HOST) === host && shown(s); });
   }
-  function fire(host) { iconsOf(host).forEach(play); }
+  function fire(host, press) { iconsOf(host).forEach(function (s) { play(s, press); }); }
 
   /* hover (mouse/pen only), press (any pointer), keyboard focus */
   doc.addEventListener("pointerover", function (e) {
@@ -100,7 +114,11 @@
     if (e.relatedTarget && h.contains(e.relatedTarget)) return;
     fire(h);
   }, true);
-  doc.addEventListener("pointerdown", function (e) { var h = e.target.closest && e.target.closest(HOST); if (h) fire(h); }, true);
+  doc.addEventListener("pointerdown", function (e) { var h = e.target.closest && e.target.closest(HOST); if (h) fire(h, true); }, true);
+  doc.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    var h = e.target.closest && e.target.closest(HOST); if (h && h === e.target) fire(h, true);
+  });
   doc.addEventListener("focusin", function (e) {
     var h = e.target.closest && e.target.closest(HOST);
     if (h && h === e.target && h.matches(":focus-visible")) fire(h);
