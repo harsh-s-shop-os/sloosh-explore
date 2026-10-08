@@ -666,9 +666,6 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 .sf-nav a { display: inline-flex; align-items: center; padding: 5px 0 7px; color: hsl(var(--n950) / 0.7); transition: color 120ms ease; }
 .sf-nav a:hover { color: hsl(var(--n950)); }
 .sf-dark { position: relative; overflow: hidden; background: hsl(var(--n950)); color: hsl(var(--n50)); }
-/* footer critters in ASCII: one canvas under the footer content; critters hang from the yellow hem beside the logo */
-.sf-crit { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.sf-dark > .sf-wrap { position: relative; z-index: 1; }
 .sf-big { display: grid; justify-items: center; padding: 44px 0 20px; }
 .sf-big .ft-stage { width: min(620px, 100%); }
 .sf-click { position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%); font-size: 12px; line-height: 16px; color: hsl(var(--n400)); white-space: nowrap; }
