@@ -745,3 +745,26 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   #tools { padding-bottom: 96px; }
   .sec-h { margin-bottom: 24px; }
 }
+
+/* ---------- models v3: split. The featured model is a tall card on the left (its clip is portrait),
+   the other six sit in a 3 x 2 grid on the right ---------- */
+.mdl.mdl2 { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: stretch; }
+.mdl2 .feat { min-height: 0; height: 100%; }
+.mdl2 .feat-bg { object-position: 50% 40%; }
+.mdl2 .feat::after { background: linear-gradient(0deg, hsl(var(--media-scrim) / 0.88) 0%, hsl(var(--media-scrim) / 0.5) 38%, hsl(var(--media-scrim) / 0) 62%); }
+.mdl2 .feat-in { padding: 32px; justify-content: flex-end; }
+.mdl2 .feat-copy p { max-width: 420px; }
+.mdl2 .feat-foot { flex-direction: column; align-items: flex-start; gap: 20px; }
+.mdl2 .feat-looks { display: none; }
+.mdl2 .mtiles { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 24px; column-gap: 16px; }
+.mdl2 .mt-m { aspect-ratio: 1 / 1; }
+@media (max-width: 1100px) {
+  .mdl.mdl2 { grid-template-columns: minmax(0, 1fr); }
+  .mdl2 .feat { min-height: 520px; }
+}
+@media (max-width: 760px) {
+  .mdl2 .feat { min-height: 480px; }
+  .mdl2 .feat-in { padding: 20px; }
+  .mdl2 .mtiles { display: flex; }
+  .mdl2 .mt-m { aspect-ratio: 4 / 5; }
+}
