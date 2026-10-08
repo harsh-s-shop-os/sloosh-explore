@@ -119,8 +119,8 @@
 .st-bar i { position: absolute; left: 0; right: 0; top: 7px; height: 4px; border-radius: 4px; overflow: hidden; background: hsl(var(--n0) / 0.28); }
 .st-bar b { display: block; height: 100%; background: hsl(var(--n0)); transform-origin: 0 50%; transform: scaleX(0); }
 .st-bar i.done b { transform: scaleX(1); }
-.st-bar i.now b { animation: st-fill var(--dur, 7000ms) linear forwards; }
-.stories.paused .st-bar i.now b, .stories.hold .st-bar i.now b { animation-play-state: paused; }
+.st-bar i.cur b { animation: st-fill var(--dur, 7000ms) linear forwards; }
+.stories.paused .st-bar i.cur b, .stories.hold .st-bar i.cur b { animation-play-state: paused; }
 @keyframes st-fill { to { transform: scaleX(1); } }
 .st-btn { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; background: hsl(var(--n0) / 0.14); color: hsl(var(--on-media)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: background-color 120ms ease, transform 160ms var(--ease-arrive); }
 @media (hover: hover) { .st-btn:hover { background: hsl(var(--n0) / 0.24); } }
@@ -165,16 +165,10 @@
 .mr:hover .mr-go, .mr:focus-visible .mr-go { opacity: 1; transform: none; }
 
 /* ---------- 3. templates: masonry under a fade ---------- */
-/* 1.5 screens of templates. No height on the column box itself: a height there makes Chrome fill columns one by one and
-   spill the rest off to the right, which left holes. explore.js repeats the set until every column runs past the clip. */
-.mas-wrap { --clip: 150vh; position: relative; max-height: var(--clip); overflow: hidden; }
-@supports (height: 1svh) { .mas-wrap { --clip: 150svh; } }
-.mas { --cols: 5; columns: var(--cols); column-gap: 12px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--clip) * 0.62), transparent var(--clip)); mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--clip) * 0.62), transparent var(--clip)); }
+.mas-wrap { position: relative; }
+.mas { columns: 5; column-gap: 12px; max-height: 760px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%); }
 .mas .mc { display: block; break-inside: avoid; margin-bottom: 12px; }
-.mas.js { display: flex; align-items: flex-start; gap: 12px; columns: auto; }
-.mas-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-.mas.js .mc { margin-bottom: 0; }
 .mas .mc > img { position: static; width: 100%; height: auto; }
 .mas-cta { position: absolute; left: 50%; bottom: 40px; z-index: 2; transform: translateX(-50%); }
 
@@ -187,14 +181,10 @@
 .build-art img { width: 100%; height: 100%; object-fit: cover; object-position: 20% 50%; border-radius: 12px; }
 
 /* ---------- 5. cast + series ---------- */
-/* TextSegmentedSwitch (DS 7.4) */
-.tabs { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 16px; background: hsl(var(--card)); }
-.tabs button { position: relative; z-index: 1; height: 36px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: hsl(var(--muted-foreground)); white-space: nowrap; transition: color 200ms ease; }
+.tabs { display: inline-flex; align-items: center; gap: 4px; }
+.tabs button { height: 32px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: hsl(var(--muted-foreground)); white-space: nowrap; transition: color 120ms ease, background-color 150ms ease; }
 @media (hover: hover) { .tabs button:hover { color: hsl(var(--foreground)); } }
-.tabs button[aria-selected="true"] { color: hsl(var(--foreground)); }
-.tabs .seg-ind { position: absolute; z-index: 0; top: 4px; left: 0; height: 36px; border-radius: 12px; background: hsl(var(--muted)); pointer-events: none; transition: transform 200ms var(--motion-ease-in-out, cubic-bezier(0.65, 0, 0.35, 1)), width 200ms var(--motion-ease-in-out, cubic-bezier(0.65, 0, 0.35, 1)); }
-.tabs:not(.seg-ready) button[aria-selected="true"] { background: hsl(var(--muted)); }
-@media (prefers-reduced-motion: reduce) { .tabs .seg-ind { transition: none; } }
+.tabs button[aria-selected="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
 .ser { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: stretch; }
 .cast { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px; border-radius: 16px; background: hsl(var(--card)); }
 .cast-top { display: flex; align-items: center; gap: 8px; font-size: 14px; }
@@ -334,7 +324,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .shell-side .cast-top { grid-area: top; } .shell-side .cast h3 { grid-area: h; } .shell-side .cast p { grid-area: p; } .shell-side .cast-row { grid-area: row; } .shell-side .cast .key { grid-area: key; align-self: center; margin: 0; }
 }
 @media (max-width: 1280px) {
-  .mas { --cols: 4; }
+  .mas { columns: 4; }
   .ser { grid-template-columns: minmax(0, 1fr); }
   .cast { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "top key" "h key" "p key" "row key"; column-gap: 32px; row-gap: 8px; }
   .cast-top { grid-area: top; } .cast h3 { grid-area: h; } .cast p { grid-area: p; } .cast-row { grid-area: row; } .cast .key { grid-area: key; align-self: center; margin: 0; }
@@ -360,7 +350,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .side .si:hover::after, .side .si:focus-visible::after { opacity: 1; transform: translate(0, -50%); }
   .mdl { grid-template-columns: minmax(0, 1fr); }
   .mlist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .mas { --cols: 3; }
+  .mas { columns: 3; }
   .build { grid-template-columns: minmax(0, 1fr); }
   .build-art { padding: 0 24px 24px; min-height: 320px; }
   .ser-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -397,7 +387,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .feat-in { padding: 20px; }
   .feat-looks { display: none; }
   .mlist { grid-template-columns: minmax(0, 1fr); }
-  .mas { --cols: 2; }
+  .mas { columns: 2; max-height: 680px; }
   .build-copy { padding: 32px 20px; }
   .build-art { padding: 0 12px 12px; min-height: 220px; }
   .cast { display: flex; }
@@ -427,7 +417,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 @media (prefers-reduced-motion: reduce) {
   .st { transition: opacity 200ms ease, visibility 0s; }
   .st.on .st-media video { animation: none; }
-  .st-bar i.now b { animation: none; transform: scaleX(1); }
+  .st-bar i.cur b { animation: none; transform: scaleX(1); }
 }
 
 /* tools with a real output: media on top, plays on hover; the rest keep an icon tile the same size */
@@ -633,8 +623,8 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 @media (max-width: 760px) { .agb .build-art { min-height: 600px; } }
 
 /* ---------- closing card, now its own section above the footer ---------- */
-/* the closing card is gone: the last section keeps the room above the footer hem */
-.sect:has(+ .sfoot) { padding-bottom: 96px; }
+.endsec { padding-top: 96px; padding-bottom: 96px; }
+.endsec .endcard { background: hsl(var(--card)); }
 
 /* ---------- footer: matched to dev.sloosh.ai ---------- */
 .sfoot { position: relative; }
@@ -742,3 +732,16 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 @media (max-width: 760px) { .ftools { grid-template-columns: minmax(0, 1fr); gap: 8px; } .ftool { padding: 12px; } .ft-th { width: 64px; height: 64px; } .ft-nm { font-size: 16px; } }
 #tools { padding-bottom: 120px; }
 @media (max-width: 760px) { #tools { padding-bottom: 80px; } }
+
+/* ---------- section rhythm: white titles, more air between sections ---------- */
+.sec-h h2 { color: hsl(var(--foreground)); }
+.sec-h { margin-bottom: 32px; }
+.sect, #models { padding-top: 160px; }
+#models { padding-top: 120px; }
+#tools { padding-bottom: 160px; }
+@media (max-width: 760px) {
+  .sect { padding-top: 104px; }
+  #models { padding-top: 80px; }
+  #tools { padding-bottom: 96px; }
+  .sec-h { margin-bottom: 24px; }
+}
