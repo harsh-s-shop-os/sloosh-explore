@@ -226,7 +226,8 @@
   var LAB = {
     dur: 12, still: 10.6,
     size: { d: [1200, 560], m: [760, 560] },
-    mobile: function () { return window.matchMedia && matchMedia("(max-width: 760px)").matches; },
+    // the cropped 760 cut whenever the stage is narrow (phones, or the media window in the split banner)
+    mobile: function (root) { return (root && root.clientWidth && root.clientWidth < 900) || (window.matchMedia && matchMedia("(max-width: 760px)").matches); },
     build: function (m) {
       var D = m === "d", ox = D ? 0 : -440, tr = {};
       var K = { cam: "G", w1: "TRAV", w2: "TRAV", w3: "TRAV", ptype: "TYPE", vb: "SX", cm: "G", ca: "G", cmt: "L0", r2: "L0", pub: "", e1: "", e2: "", run1: "", run2: "", vbw: "" };

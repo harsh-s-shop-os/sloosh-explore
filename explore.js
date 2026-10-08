@@ -362,6 +362,47 @@
     });
   })();
 
+
+  /* ---------- split banners: peeking critters and hand-drawn marks ----------
+     Each critter hides behind an edge and comes out on its own random timer while the banner is on screen.
+     Hovering the banner brings everyone out; clicking a critter makes it hop. */
+  doc.querySelectorAll("[data-bn]").forEach(function (bn) {
+    var RMb = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    var pks = [].slice.call(bn.querySelectorAll(".pk"));
+    var timers = [], live = false, hovering = false;
+    function clear() { timers.forEach(clearTimeout); timers = []; }
+    function cycle(pk, first) {
+      var wait = first ? 500 + Math.random() * 2200 : 2600 + Math.random() * 4200;
+      timers.push(setTimeout(function () {
+        if (!live || hovering) return;
+        pk.classList.add("on");
+        timers.push(setTimeout(function () {
+          if (!live || hovering) return;
+          pk.classList.remove("on"); cycle(pk, false);
+        }, 2400 + Math.random() * 2200));
+      }, wait));
+    }
+    function start() { clear(); pks.forEach(function (pk) { cycle(pk, true); }); }
+    pks.forEach(function (pk) {
+      pk.tabIndex = 0;
+      var hop = function () { pk.classList.add("on"); pk.classList.remove("hop"); void pk.offsetWidth; pk.classList.add("hop"); snd("pop"); };
+      pk.addEventListener("click", hop);
+      pk.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); hop(); } });
+      pk.addEventListener("animationend", function () { pk.classList.remove("hop"); });
+    });
+    if (RMb) { pks.forEach(function (pk) { pk.classList.add("on"); }); bn.classList.add("in"); return; }
+    bn.addEventListener("mouseenter", function () { hovering = true; clear(); pks.forEach(function (pk) { pk.classList.add("on"); }); });
+    bn.addEventListener("mouseleave", function () { hovering = false; pks.forEach(function (pk) { pk.classList.remove("on"); }); if (live) start(); });
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) {
+        var vis = es[0].isIntersecting;
+        if (vis) bn.classList.add("in");
+        if (vis && !live) { live = true; if (!hovering) start(); }
+        else if (!vis && live) { live = false; clear(); }
+      }, { threshold: 0.35 }).observe(bn);
+    } else { bn.classList.add("in"); live = true; start(); }
+  });
+
   /* ---------- copy ---------- */
   doc.addEventListener("click", function (e) {
     var b = e.target.closest("[data-copy]"); if (!b) return;
