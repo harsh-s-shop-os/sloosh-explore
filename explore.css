@@ -176,6 +176,7 @@
 .mas-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .mas.js .mc { margin-bottom: 0; }
 .mas .mc > img { position: static; width: 100%; height: auto; }
+.mas .fade .act .key { width: 100%; } /* Recreate spans the card on masonry grids */
 .mas-cta { position: absolute; left: 50%; bottom: 40px; z-index: 2; transform: translateX(-50%); }
 
 /* ---------- 4. spaces banner ---------- */
