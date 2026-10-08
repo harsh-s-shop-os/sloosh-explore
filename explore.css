@@ -1405,41 +1405,52 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
   .dr-cv canvas { transition: none; }
 }
 
-/* ---------- 0b. drop hero v3 (#drop-2, .dr-v3): the box alone, sample photos scattered around it as prints ----------
-   Prints near the content sit a fixed distance from the centre (.at-c); the outer ones hang off the section edge (.at-l/.at-r)
-   but never drift further than 800px from the centre. Below 1080px of section width they line up under the box.
-   The result card is one grid: your image | divider | three looks, all four the same size, one 40px button size. */
-.dr-v3 { container-type: inline-size; min-height: 0; padding: 48px 0 100px; overflow-x: clip; overflow-y: visible; scroll-margin-top: 61px; }
-.shell-side .dr-v3 { scroll-margin-top: 0; }
-.shell-side .dr-v3 { min-height: 0; }
+/* ---------- 0b. drop hero v3 (#drop-2, .dr-v3): the box alone, sample photos lying near the edges as prints ----------
+   Prints hang near the section edges (negative inset = peeking off it) and never sit further than 900px from the centre.
+   The box keeps one height in both states, so the section never changes height and the carousel always peeks the same.
+   Motion: pill, headline, box, notes, then prints spring in (.dr-on); prints leave past the edges while looks show (.res).
+   Below 1080px of section width the prints line up under the box. */
+.dr-v3 { --spring: cubic-bezier(0.34, 1.32, 0.64, 1); --bh: 344px;
+  container-type: inline-size; min-height: 0; padding: 40px 0 100px; overflow-x: clip; overflow-y: visible; scroll-margin-top: 61px; }
+.shell-side .dr-v3 { min-height: 0; scroll-margin-top: 0; }
 .dr-v3.dragging { z-index: 6; }
-.dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 32px; }
+.dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 28px; }
+.dr-v3 .dr-h { margin-top: 16px; }
 .dr-v3 .dr-stage { max-width: 640px; }
-.dr-v3.res .dr-stage { max-width: 1160px; }
-.dr-v3 .dr-zone { padding: 48px 24px 44px; }
+.dr-v3.res .dr-stage { max-width: 720px; }
 .dr-v3.res .dr-box.over { box-shadow: inset 0 0 0 2px hsl(var(--brand-accent)); }
-/* the note, said by one bird */
-.dr-v3 .dr-note { display: none; }
-.dr-v3 .dr-note-l { top: 36px; }
-.dr-v3 .dr-say { display: flex; align-items: flex-end; gap: 6px; }
-.dr-v3 .dr-say .dr-hand { margin-bottom: 14px; }
-.dr-v3 .dr-crit { position: static; transform: none; }
-.dr-v3 .dr-note-l .dr-arw { margin-top: -6px; }
-.dr-v3.res .dr-note { opacity: 0; }
-@container (min-width: 1180px) { .dr-v3 .dr-note { display: flex; } }
+.dr-v3 .dr-zone { justify-content: center; padding: 40px 24px; }
+/* the bird perches on the drawn photo */
+.dr-v3 .dr-art { position: relative; }
+.dr-v3 .dr-crit { position: absolute; left: 10px; bottom: auto; top: -22px; z-index: 1; transform: none; line-height: 0; }
+.dr-v3.res .dr-crit { opacity: 1; transform: none; }
+/* content swap inside the box */
+.dr-v3.res .dr-run, .dr-v3:not(.res) .dr-pick { animation: dr-swap 320ms var(--ease-arrive) 80ms both; }
+@keyframes dr-swap { from { opacity: 0; } }
 
-/* prints: white border, a flat lip under them, the keycap glint on hover; pressed and dragged they lift 5% */
+/* arrival: pill, headline, box, the three notes; one language (14px up, 360ms move, 240ms fade), staggered */
+.dr-v3 .dr-eye, .dr-v3 .dr-h, .dr-v3 .dr-fine > span { transition: opacity 240ms ease var(--dl, 0ms), translate 360ms var(--ease-arrive) var(--dl, 0ms); }
+.dr-v3 .dr-box { transition: opacity 240ms ease var(--dl, 0ms), translate 360ms var(--ease-arrive) var(--dl, 0ms), box-shadow 160ms ease, background-color 160ms ease; }
+.dr-v3 .dr-h { --dl: 90ms; }
+.dr-v3 .dr-box { --dl: 180ms; }
+.dr-v3 .dr-fine > span:nth-child(1) { --dl: 300ms; }
+.dr-v3 .dr-fine > span:nth-child(2) { --dl: 350ms; }
+.dr-v3 .dr-fine > span:nth-child(3) { --dl: 400ms; }
+.dr-v3:not(.dr-on) .dr-eye, .dr-v3:not(.dr-on) .dr-h, .dr-v3:not(.dr-on) .dr-box, .dr-v3:not(.dr-on) .dr-fine > span { opacity: 0; translate: 0 14px; }
+
+/* prints: thin white border, a flat lip under them, the keycap glint on hover; pressed and dragged they lift 5% */
 .dr-scatter { position: absolute; inset: 0; pointer-events: none; } /* no z-index: a lifted print must rise above the box */
 .dr-scatter-t { display: none; }
-.dr-print { --lp: 4px; position: absolute; z-index: 0; top: var(--y); width: calc(var(--w) + 12px); padding: 6px; border: 0; border-radius: 10px; overflow: hidden; isolation: isolate;
+.dr-print { --lp: 4px; --sx: -160px; --sr: -16deg; --pd: calc(500ms + var(--i, 0) * 60ms);
+  position: absolute; z-index: 0; top: var(--y); width: calc(var(--w) + 8px); padding: 4px; border: 0; border-radius: 8px; overflow: hidden; isolation: isolate;
   background: hsl(var(--n0)); box-shadow: 0 var(--lp) 0 hsl(var(--n300)); rotate: var(--r, 0deg); pointer-events: auto; cursor: grab;
   touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
   transition: translate 200ms var(--ease-hop), scale 160ms var(--ease-arrive), box-shadow 200ms var(--ease-hop), opacity 160ms ease; }
+.dr-print.side-r { --sx: 160px; --sr: 16deg; }
 [data-theme="light"] .dr-print { box-shadow: 0 0 0 1px hsl(var(--border)), 0 var(--lp) 0 hsl(var(--n300)); } /* white print on a white ground needs an edge */
 .dr-print img { display: block; width: 100%; aspect-ratio: var(--ar, 4 / 5); object-fit: cover; border-radius: 4px; pointer-events: none; -webkit-user-drag: none; }
-.dr-print.at-c { left: calc(50% + var(--cx)); }
-.dr-print.at-l { left: max(calc(50% - 50cqw + var(--ex)), calc(50% - 800px)); }
-.dr-print.at-r { right: max(calc(50% - 50cqw + var(--ex)), calc(50% - 800px)); }
+.dr-print.at-l { left: calc(50% - min(50cqw, 900px) + var(--ex)); }
+.dr-print.at-r { right: calc(50% - min(50cqw, 900px) + var(--ex)); }
 .dr-print::before, .dr-print::after { content: ""; position: absolute; z-index: 1; top: -20%; bottom: -20%; left: calc(-10% - 60px);
   background: var(--keycap-shine); transform: skewX(-18deg); pointer-events: none; }
 .dr-print::before { width: 18px; }
@@ -1454,41 +1465,60 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 .dr-print.home { transition: translate 280ms var(--ease-arrive), scale 160ms var(--ease-arrive), box-shadow 200ms var(--ease-hop); }
 .dr-print.used { opacity: 0; transition: opacity 120ms ease; }
 .dr-v3.dragging, .dr-v3.dragging * { cursor: grabbing !important; }
+/* away: before arrival and while looks show. Tilted further, a little smaller, faded, past the edge */
+.dr-v3:not(.dr-on) .dr-print, .dr-v3.res .dr-print { opacity: 0; translate: var(--sx) 24px; rotate: calc(var(--r) + var(--sr)); scale: 0.86; pointer-events: none; }
+/* coming in: a slight spring, one after another */
+.dr-v3.dr-anim:not(.res) .dr-print { transition: opacity 300ms ease var(--pd), translate 720ms var(--spring) var(--pd), rotate 720ms var(--spring) var(--pd), scale 720ms var(--spring) var(--pd), box-shadow 200ms ease; }
+.dr-v3.dr-back-in .dr-print { --pd: calc(160ms + var(--i, 0) * 50ms); }
+/* picked up mid-arrival: the drag and the slide home keep their own timing */
+.dr-v3.dr-anim:not(.res) .dr-print.lift { transition: scale 160ms var(--ease-arrive), box-shadow 160ms var(--ease-arrive); }
+.dr-v3.dr-anim:not(.res) .dr-print.home { transition: translate 280ms var(--ease-arrive), scale 160ms var(--ease-arrive), box-shadow 200ms var(--ease-hop); }
+/* going out: quicker, accelerating, a short stagger */
+.dr-v3.res .dr-print { transition: opacity 280ms ease calc(var(--i, 0) * 30ms), translate 420ms cubic-bezier(0.55, 0, 0.75, 0.2) calc(var(--i, 0) * 30ms), rotate 420ms cubic-bezier(0.55, 0, 0.75, 0.2) calc(var(--i, 0) * 30ms), scale 420ms cubic-bezier(0.55, 0, 0.75, 0.2) calc(var(--i, 0) * 30ms); }
 @container (max-width: 1079px) {
   .dr-v3 .dr-scatter { position: static; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-top: 24px; pointer-events: auto; }
   .dr-v3 .dr-scatter-t { display: block; flex-basis: 100%; margin-bottom: 4px; font-size: 14px; font-weight: 500; line-height: 1.4; text-align: center; color: hsl(var(--muted-foreground)); }
-  .dr-v3 .dr-print { position: relative; top: auto; left: auto; right: auto; width: 76px; padding: 4px; border-radius: 8px; }
+  .dr-v3 .dr-print { --sx: 0px; --sr: -8deg; position: relative; top: auto; left: auto; right: auto; width: 76px; padding: 3px; border-radius: 7px; }
   .dr-v3 .dr-print img { aspect-ratio: 1; }
+  .dr-v3.res .dr-scatter { display: none; }
 }
 @container (max-width: 520px) {
   .dr-v3 .dr-print { width: 60px; }
   .dr-v3 .dr-print:nth-of-type(n+6) { display: none; }
 }
 
-/* the result: one grid, your image and the three looks at the same size */
-.dr-v3 .dr-run { grid-template-columns: minmax(0, 1fr) 1px repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; column-gap: 16px; row-gap: 20px; padding: 24px; align-items: start; }
-.dr-v3 .dr-col-t { grid-column: 1; grid-row: 1; align-self: center; }
-.dr-v3 .dr-div { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin-block: -24px; background: hsl(var(--border)); }
-.dr-v3 .dr-out-h { grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; }
-.dr-v3 .dr-out-t { font-size: 16px; font-weight: 600; line-height: 1.4; }
-.dr-v3 .dr-ph { grid-column: 1; grid-row: 2; }
+/* the result: one grid, your image and the three looks at the same size; the box keeps the upload box's height */
+.dr-v3 .dr-run { grid-template-columns: minmax(0, 1fr) 1px repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; column-gap: 12px; row-gap: 16px; padding: 16px; align-items: start; }
+.dr-v3 .dr-col-t { grid-column: 1; grid-row: 1; align-self: center; white-space: nowrap; }
+.dr-v3 .dr-div { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin-block: -16px; background: hsl(var(--border)); }
+.dr-v3 .dr-out-h { grid-column: 3 / 6; grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; }
+.dr-v3 .dr-out-t { font-size: 16px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
+.dr-v3 .dr-ph { grid-column: 1; grid-row: 2; border-radius: 12px; }
 .dr-v3 .dr-cards { display: contents; }
+.dr-v3 .dr-card { border-radius: 12px; }
+.dr-v3 .dr-open { border-radius: 12px; }
 .dr-v3 .dr-card:nth-child(1) { grid-column: 3; grid-row: 2; }
 .dr-v3 .dr-card:nth-child(2) { grid-column: 4; grid-row: 2; }
 .dr-v3 .dr-card:nth-child(3) { grid-column: 5; grid-row: 2; }
+.dr-v3 .dr-cap { left: 10px; right: 10px; bottom: 10px; }
+.dr-v3 .dr-hov { top: 8px; right: 8px; }
 .dr-v3 .dr-back-row { grid-column: 1; grid-row: 3; display: flex; min-width: 0; }
 .dr-v3 .dr-back { margin-top: 0; }
 .dr-v3 .dr-foot { grid-column: 3 / 6; grid-row: 3; flex-direction: row; align-items: center; min-height: 40px; padding-top: 0; }
 .dr-v3 .dr-foot-out, .dr-v3 .dr-foot-in { flex: 1; flex-wrap: nowrap; justify-content: flex-end; gap: 12px; min-width: 0; }
-.dr-v3 .dr-foot-note, .dr-v3 .dr-saved { margin-right: auto; min-width: 0; }
-.dr-v3 .dr-tags { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; min-height: 0; }
+.dr-v3 .dr-saved { margin-right: auto; min-width: 0; }
+.dr-v3 .dr-tags { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2; min-height: 0; gap: 4px; }
 .dr-v3 .dr-tags span { background: hsl(var(--media-scrim) / 0.7); color: hsl(var(--on-media)); }
 .dr-v3 .dr-count { background: hsl(var(--accent)); color: hsl(var(--foreground)); } /* DS CountPill, neutral: readable in both themes */
-@container (max-width: 999px) {
+@container (min-width: 840px) {
+  .dr-v3 .dr-box { height: var(--bh); }
+  .dr-v3 .dr-pick, .dr-v3 .dr-zone { height: 100%; }
+}
+@container (max-width: 839px) {
   .dr-v3 .dr-run { grid-template-columns: 88px minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "tin tin" "ph back" "oh oh" "cards cards" "foot foot"; column-gap: 16px; row-gap: 16px; padding: 20px; }
   .dr-v3 .dr-col-t { grid-area: tin; }
   .dr-v3 .dr-div { display: none; }
-  .dr-v3 .dr-ph { grid-area: ph; border-radius: 12px; }
+  .dr-v3 .dr-ph { grid-area: ph; }
   .dr-v3 .dr-tags { display: none; }
   .dr-v3 .dr-back-row { grid-area: back; align-self: end; }
   .dr-v3 .dr-out-h { grid-area: oh; padding-top: 16px; border-top: 1px solid hsl(var(--border)); }
@@ -1499,14 +1529,16 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 }
 @container (max-width: 640px) {
   .dr-v3 .dr-out-h { flex-direction: column; align-items: flex-start; }
+  .dr-v3 .dr-out-t { white-space: normal; }
   .dr-v3 .dr-cards { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: -20px; padding-inline: 20px; scroll-padding-inline: 20px; }
   .dr-v3 .dr-cards::-webkit-scrollbar { display: none; }
   .dr-v3 .dr-card { flex: none; width: 72%; scroll-snap-align: start; }
-  .dr-v3 .dr-foot-note { flex-basis: 100%; }
 }
 @media (max-width: 760px) { .dr-v3 { padding: 32px 0 48px; } .dr-v3 .dr-stage, .dr-v3.res .dr-stage { margin-top: 24px; } }
 @media (prefers-reduced-motion: reduce) {
-  .dr-print, .dr-print.home { transition: opacity 160ms ease; }
+  .dr-v3 .dr-print, .dr-v3 .dr-print.home, .dr-v3.dr-anim:not(.res) .dr-print, .dr-v3.res .dr-print { transition: opacity 200ms ease; }
+  .dr-v3:not(.dr-on) .dr-print, .dr-v3.res .dr-print { translate: none; rotate: var(--r); scale: none; }
+  .dr-v3 .dr-eye, .dr-v3 .dr-h, .dr-v3 .dr-box, .dr-v3 .dr-fine > span { translate: none !important; }
   .dr-print:hover::before, .dr-print:hover::after { animation: none; }
 }
 

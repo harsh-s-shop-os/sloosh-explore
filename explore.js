@@ -788,7 +788,7 @@
     $$(".dr-crit").forEach(function (n) {
       var c = I.critter(n.getAttribute("data-crit"), { size: +n.getAttribute("data-size") || 56, flip: n.hasAttribute("data-flip"), clickable: true });
       n.appendChild(c.el); crits.push(c);
-      n.addEventListener("click", function () { if (c.play) c.play(Math.random() > 0.5 ? "hop" : "wiggle"); snd("pop"); });
+      n.addEventListener("click", function (e) { if (V3) { e.preventDefault(); e.stopPropagation(); } /* v3: it sits inside the upload label */ if (c.play) c.play(Math.random() > 0.5 ? "hop" : "wiggle"); snd("pop"); });
     });
   }
   function startInk() {
@@ -849,7 +849,7 @@
   function used() { var n = 0; try { n = +sessionStorage.getItem("sl-surprise") || 0; } catch (e) {} return n; }
   function use() { if (ALWAYS) return; try { sessionStorage.setItem("sl-surprise", used() + 1); } catch (e) {} }
   function left() { return ALWAYS ? 2 : Math.max(0, FREE - used()); }
-  var T3 = { person: "Three new looks for you", product: "Three new looks for your product", thing: "Three new looks for your photo" };
+  var T3 = { person: "Three new looks", product: "Three new looks", thing: "Three new looks" }; /* one snappy line; it fits the 720px card */
   function title() { return V3 ? T3[cur.kind] : KIND[cur.kind].title; }
 
   var box = $(".dr-box"), inp = $(".dr-zone input"), run = $(".dr-run"), ph = $(".dr-ph img"), tags = $(".dr-tags"), cards = $$(".dr-card");
@@ -945,6 +945,15 @@
     $(".dr-video", c).addEventListener("click", function (e) { e.stopPropagation(); toast("Opens Video with “" + $("b", c).textContent + "” as the first frame."); });
   });
   sync();
+  /* v3 motion: on load pill, headline, box, the three notes, then the prints spring in from the edges.
+     Looks shown (.res): the prints tilt, shrink and fade out past the edges. Try another: they spring back. */
+  if (V3) {
+    var animT = 0;
+    var anim = function (cls, ms) { host.classList.add("dr-anim"); if (cls) host.classList.add(cls); clearTimeout(animT); animT = setTimeout(function () { host.classList.remove("dr-anim", "dr-back-in"); }, ms); };
+    anim(null, 1900);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { host.classList.add("dr-on"); }); });
+    btnBack.addEventListener("click", function () { anim("dr-back-in", 1300); });
+  }
 
   /* ---------- the looks, drawn from the photo (stand-ins for the model's output) ---------- */
   var W = 640, H = 800;
