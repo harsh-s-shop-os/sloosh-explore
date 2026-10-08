@@ -1,0 +1,48 @@
+<!-- MCP agent-section motion (light surface): one agent request, wired to Spaces, Models and Assets.
+     A pulse runs the route, the shot lands in Assets, the reply comes back to chat. ~11.5s loop, rendered by mcp-motion.js -->
+<div class="mm ma anch-r" data-mm="agents" aria-hidden="true">
+  <svg class="mm-dots"><defs><pattern id="maDot" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.25" fill="currentColor"/></pattern></defs><rect width="100%" height="100%" fill="url(#maDot)"/></svg>
+  <div class="mm-in">
+    <svg class="wires" data-k="wires" width="600" height="600" viewBox="0 0 600 600">
+      <g data-set="d">
+        <path class="w" data-k="wa" pathLength="1" d="M330 150 C 330 206, 110 200, 110 262"/>
+        <path class="w" data-k="wb" pathLength="1" d="M330 150 C 330 206, 300 214, 300 262"/>
+        <path class="w" data-k="wc" pathLength="1" d="M330 150 C 330 206, 490 200, 490 262"/>
+        <path class="on" data-k="ra" pathLength="1" d="M330 150 C 330 206, 110 200, 110 262"/>
+        <path class="on" data-k="rb" pathLength="1" d="M110 262 C 110 228, 300 228, 300 262"/>
+        <path class="on" data-k="rc" pathLength="1" d="M300 262 C 300 228, 490 228, 490 262"/>
+        <path class="on" data-k="rd" pathLength="1" d="M490 262 C 490 200, 330 206, 330 150"/>
+      </g>
+      <g data-set="m">
+        <path class="w" data-k="mwa" pathLength="1" d="M180 114 C 180 150, 95 146, 95 174"/>
+        <path class="w" data-k="mwb" pathLength="1" d="M180 114 C 180 150, 265 146, 265 174"/>
+        <path class="w" data-k="mwc" pathLength="1" d="M265 368 C 265 390, 180 362, 180 382"/>
+        <path class="on" data-k="mra" pathLength="1" d="M180 114 C 180 150, 95 146, 95 174"/>
+        <path class="on" data-k="mrb" pathLength="1" d="M95 174 C 95 142, 265 142, 265 174"/>
+        <path class="on" data-k="mrc" pathLength="1" d="M265 368 C 265 390, 180 362, 180 382"/>
+        <path class="on" data-k="mrd" pathLength="1" d="M259 470 C 350 470, 352 130, 300 112"/>
+      </g>
+    </svg>
+    <div class="L C mm-hand" data-k="note" style="width:140px;height:70px"><span style="position:absolute;left:0;top:0;transform:rotate(-6deg)">your agent</span><svg viewBox="0 0 60 50" style="left:96px;top:14px;width:60px;height:50px"><path d="M2 6 C 26 4, 44 18, 52 40"/><path d="M44 36 L 52 42 L 56 32"/></svg></div>
+    <div class="L CT req" data-k="req">
+      <div class="req-hd"><span class="mm-tile claude"><span class="mk" style="--mk:url([[m:story/mcp/claude.webp]])"></span></span>Claude</div>
+      <div class="req-row"><span class="im"><img src="[[m:story/mcpm/ref.webp]]" alt=""></span><p>Run our launch-shot space on this tumbler.</p></div>
+      <div class="req-rep" data-k="rep"><div><span class="gl"><img src="[[m:story/mcp/sloosh-glyph.svg]]" alt=""></span>Done. The shots are in your Sloosh Assets.</div></div>
+    </div>
+    <div class="L C cap" data-k="c1"><span class="rg"></span>
+      <div class="vis"><div class="nd3"><svg viewBox="0 0 176 112"><path d="M58 58 H 68"/><path d="M108 58 H 118"/></svg><i class="a" data-k="n1"><img src="[[m:story/mcpm/ref.webp]]" alt=""></i><i class="b" data-k="n2"><img src="[[m:story/mcpm/studio-s.webp]]" alt=""></i><i class="c" data-k="n3"><img src="[[m:story/mcpm/life-s.webp]]" alt=""></i></div></div>
+      <div class="tx"><b>[[icon16 WorkflowSquare03Icon]]Spaces</b><span data-k="c1a">Run a reusable creative workflow.</span><span class="st2" data-k="c1b">Running Launch Shots</span></div>
+    </div>
+    <div class="L C cap" data-k="c2"><span class="rg"></span>
+      <div class="vis"><div class="mdl"><i data-k="m1"><img src="[[m:img/logo-google.webp]]" alt=""></i><i data-k="m2"><img src="[[m:img/logo-seedream.webp]]" alt=""></i><i data-k="m3"><img src="[[m:img/logo-bfl.webp]]" alt=""></i></div><span class="mdl-bar" data-k="mbarw"><b data-k="mbar"></b></span><span class="mdl-pick" data-k="mpick">Nano Banana Pro</span></div>
+      <div class="tx"><b>[[icon16 SparklesIcon]]Models</b><span data-k="c2a">Choose a model for the shot.</span><span class="st2" data-k="c2b">Making the shot</span></div>
+    </div>
+    <div class="L C crit" data-k="crit">[[critter bird 56]]</div>
+    <div class="L C cap" data-k="c3"><span class="rg"></span>
+      <div class="vis"><div class="grid"><i class="slot" data-k="slot"></i><i><img src="[[m:story/mcp/lummi-027.webp]]" alt=""></i><i><img src="[[m:story/mcp/lummi-091.webp]]" alt=""></i><i><img src="[[m:story/mcp/lummi-106.webp]]" alt=""></i><i><img src="[[m:story/mcp/lummi-136.webp]]" alt=""></i><i><img src="[[m:story/mcpm/life-s.webp]]" alt=""></i></div></div>
+      <div class="tx"><b>[[icon16 Folder01Icon]]Assets</b><span data-k="c3a">Pick up the finished work.</span><span class="st2" data-k="c3b">Saved to Assets</span></div>
+    </div>
+    <div class="L C res" data-k="res"><img src="[[m:story/mcpm/studio-s.webp]]" alt=""></div>
+    <div class="L C pulse" data-k="pulse"></div>
+  </div>
+</div>

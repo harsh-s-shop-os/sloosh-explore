@@ -1,0 +1,31 @@
+<!-- MCP hero motion: pick an agent, connect it to Sloosh, give it a brief, Sloosh makes the set, it comes back to chat and Assets.
+     A scripted ~9.6s loop rendered by mcp-motion.js (every layer is live: logo masks, text, photos, the video) -->
+<div class="mm mh" data-mm="hero" aria-hidden="true">
+  <div class="mm-in">
+    <div class="L C mm-hand" data-k="note" style="width:230px;height:60px;text-align:center"><svg viewBox="0 0 60 40" style="left:150px;top:-34px;width:60px;height:40px"><path d="M4 34 C 22 34, 40 22, 46 6"/><path d="M38 10 L 46 5 L 50 14"/></svg><span style="position:absolute;left:0;right:0;top:24px">bring your own agent</span></div>
+    <div class="L" data-k="row" style="width:760px;height:500px;transform-origin:0 0">
+      <svg class="mm-stroke" width="760" height="500" viewBox="0 0 760 500"><path data-k="stroke" pathLength="1" d="M470 215 C 486 203, 506 227, 520 215"/></svg>
+      <div class="L C mm-tile chatgpt" data-k="chatgpt"><span class="mk" style="--mk:url([[m:story/mcp/chatgpt.svg]])"></span></div>
+      <div class="L C mm-tile cursor" data-k="cursor"><span class="mk" style="--mk:url([[m:story/mcp/cursor.webp]])"></span></div>
+      <div class="L C mm-tile claude" data-k="claude"><span class="mk" style="--mk:url([[m:story/mcp/claude.webp]])"></span></div>
+      <div class="L C mm-badge" data-k="badge"><span class="gl"><img src="[[m:story/mcp/sloosh-glyph.svg]]" alt=""></span>Sloosh<span class="bring"></span></div>
+    </div>
+    <div class="L chat" data-k="chat" style="transform-origin:50% 0">
+      <div class="chat-hd"><span class="mk" style="--mk:url([[m:story/mcp/claude.webp]])"></span>Claude</div>
+      <div class="bub"><div class="bub-img" data-k="bimg"><img src="[[m:story/mcpm/ref.webp]]" alt=""></div><p data-k="type" data-text="Turn this tumbler into a launch campaign."></p></div>
+      <div class="rep-w" data-k="repw" data-h="48"><div class="rep" data-k="rep"><span class="gl"><img src="[[m:story/mcp/sloosh-glyph.svg]]" alt=""></span>Your launch set is ready.<span class="th"><span><img src="[[m:story/mcpm/studio-s.webp]]" alt=""></span><span><img src="[[m:story/mcpm/life-s.webp]]" alt=""></span><span><img src="[[m:story/mcpm/video.webp]]" alt=""></span></span></div></div>
+    </div>
+    <div class="L C stage" data-k="stage">
+      <svg class="stage-dots" viewBox="0 0 340 300"><defs><pattern id="mhDot" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="currentColor"/></pattern></defs><rect width="340" height="300" fill="url(#mhDot)"/></svg>
+      <span class="stage-hd"><span class="gl"><img src="[[m:story/mcp/sloosh-glyph.svg]]" alt=""></span>Making your campaign</span>
+      <div class="ring"><svg viewBox="0 0 92 92"><circle class="tr" cx="46" cy="46" r="42"/><circle class="pr" data-k="ring" cx="46" cy="46" r="42" pathLength="1"/></svg><span class="ri"><img src="[[m:story/mcpm/ref.webp]]" alt=""></span></div>
+      <div class="slots"><i><b data-k="sl0"></b></i><i><b data-k="sl1"></b></i><i><b data-k="sl2"></b></i></div>
+    </div>
+    <div class="L C out" data-k="o1"><img src="[[m:story/mcpm/studio.webp]]" alt=""><span class="lab">Studio shot</span></div>
+    <div class="L C out v" data-k="o3"><video muted playsinline loop preload="auto" poster="[[m:story/mcpm/video.webp]]" src="[[m:story/mcpm/video.mp4]]"></video><span class="bar"><b data-k="vbar"></b></span><span class="lab"><i class="pl"></i>Video · 0:05</span></div>
+    <div class="L C out" data-k="o2"><img src="[[m:story/mcpm/life.webp]]" alt=""><span class="lab">Lifestyle</span></div>
+    <div class="L C fly" data-k="fly"><img src="[[m:story/mcpm/ref.webp]]" alt=""></div>
+    <div class="L C mm-chip done" data-k="done"><span class="tk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ready in your chat. Saved in Sloosh.</div>
+    <div class="L C assets" data-k="assets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7.5c0-1.1.9-2 2-2h4.2l2 2.2H19c1.1 0 2 .9 2 2V17c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2z"/></svg>Assets<span class="ct" data-k="ct">+3</span></div>
+  </div>
+</div>

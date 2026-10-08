@@ -119,8 +119,8 @@
 .st-bar i { position: absolute; left: 0; right: 0; top: 7px; height: 4px; border-radius: 4px; overflow: hidden; background: hsl(var(--n0) / 0.28); }
 .st-bar b { display: block; height: 100%; background: hsl(var(--n0)); transform-origin: 0 50%; transform: scaleX(0); }
 .st-bar i.done b { transform: scaleX(1); }
-.st-bar i.now b { animation: st-fill var(--dur, 7000ms) linear forwards; }
-.stories.paused .st-bar i.now b, .stories.hold .st-bar i.now b { animation-play-state: paused; }
+.st-bar i.cur b { animation: st-fill var(--dur, 7000ms) linear forwards; }
+.stories.paused .st-bar i.cur b, .stories.hold .st-bar i.cur b { animation-play-state: paused; }
 @keyframes st-fill { to { transform: scaleX(1); } }
 .st-btn { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; background: hsl(var(--n0) / 0.14); color: hsl(var(--on-media)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: background-color 120ms ease, transform 160ms var(--ease-arrive); }
 @media (hover: hover) { .st-btn:hover { background: hsl(var(--n0) / 0.24); } }
@@ -130,7 +130,7 @@
 
 /* ---------- 2. models ---------- */
 #models { padding-top: 72px; }
-.mdl { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 12px; }
+.mdl { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 24px; }
 .feat { position: relative; min-height: 480px; border-radius: 16px; overflow: hidden; isolation: isolate; background: hsl(var(--n900)); color: hsl(var(--on-media)); }
 .feat-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 500ms var(--ease-arrive); }
 @media (hover: hover) { .feat:hover .feat-bg { transform: scale(1.03); } }
@@ -144,7 +144,7 @@
 .look { position: relative; width: 112px; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: hsl(var(--n800)); box-shadow: 0 0 0 1px hsl(var(--n0) / 0.16); }
 .look video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 /* model cards: words on the left, the model's own output fills the right and fades in under them */
-.mlist { display: flex; flex-direction: column; gap: 12px; }
+.mlist { display: flex; flex-direction: column; gap: 8px; }
 .mlist > li { flex: 1; display: flex; }
 .mr { position: relative; flex: 1; min-height: 100px; display: grid; grid-template-columns: 40px minmax(0, 1fr) 24px; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 16px; overflow: hidden; isolation: isolate; background: hsl(var(--card)); box-shadow: inset 0 0 0 1px hsl(var(--border) / 0.6); transition: box-shadow 160ms ease, transform 200ms var(--ease-arrive); }
 @media (hover: hover) { .mr:hover { box-shadow: inset 0 0 0 1px hsl(var(--border)); } }
@@ -165,9 +165,9 @@
 .mr:hover .mr-go, .mr:focus-visible .mr-go { opacity: 1; transform: none; }
 
 /* ---------- 3. templates: masonry under a fade ---------- */
-.mas-wrap { position: relative; max-height: 760px; overflow: hidden; }
-.mas { columns: 5; column-gap: 12px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 395px, transparent 760px); mask-image: linear-gradient(to bottom, #000 0, #000 395px, transparent 760px); }
+.mas-wrap { position: relative; }
+.mas { columns: 5; column-gap: 12px; max-height: 760px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 100%); }
 .mas .mc { display: block; break-inside: avoid; margin-bottom: 12px; }
 .mas .mc > img { position: static; width: 100%; height: auto; }
 .mas-cta { position: absolute; left: 50%; bottom: 40px; z-index: 2; transform: translateX(-50%); }
@@ -181,14 +181,10 @@
 .build-art img { width: 100%; height: 100%; object-fit: cover; object-position: 20% 50%; border-radius: 12px; }
 
 /* ---------- 5. cast + series ---------- */
-/* TextSegmentedSwitch (DS 7.4) */
-.tabs { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 16px; background: hsl(var(--card)); }
-.tabs button { position: relative; z-index: 1; height: 36px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: hsl(var(--muted-foreground)); white-space: nowrap; transition: color 200ms ease; }
+.tabs { display: inline-flex; align-items: center; gap: 4px; }
+.tabs button { height: 32px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: hsl(var(--muted-foreground)); white-space: nowrap; transition: color 120ms ease, background-color 150ms ease; }
 @media (hover: hover) { .tabs button:hover { color: hsl(var(--foreground)); } }
-.tabs button[aria-selected="true"] { color: hsl(var(--foreground)); }
-.tabs .seg-ind { position: absolute; z-index: 0; top: 4px; left: 0; height: 36px; border-radius: 12px; background: hsl(var(--muted)); pointer-events: none; transition: transform 200ms var(--motion-ease-in-out, cubic-bezier(0.65, 0, 0.35, 1)), width 200ms var(--motion-ease-in-out, cubic-bezier(0.65, 0, 0.35, 1)); }
-.tabs:not(.seg-ready) button[aria-selected="true"] { background: hsl(var(--muted)); }
-@media (prefers-reduced-motion: reduce) { .tabs .seg-ind { transition: none; } }
+.tabs button[aria-selected="true"] { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
 .ser { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: stretch; }
 .cast { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px; border-radius: 16px; background: hsl(var(--card)); }
 .cast-top { display: flex; align-items: center; gap: 8px; font-size: 14px; }
@@ -391,9 +387,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .feat-in { padding: 20px; }
   .feat-looks { display: none; }
   .mlist { grid-template-columns: minmax(0, 1fr); }
-  .mas { columns: 2; }
-  .mas-wrap { max-height: 680px; }
-  .mas { -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 680px); mask-image: linear-gradient(to bottom, #000 0, #000 354px, transparent 680px); }
+  .mas { columns: 2; max-height: 680px; }
   .build-copy { padding: 32px 20px; }
   .build-art { padding: 0 12px 12px; min-height: 220px; }
   .cast { display: flex; }
@@ -423,7 +417,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 @media (prefers-reduced-motion: reduce) {
   .st { transition: opacity 200ms ease, visibility 0s; }
   .st.on .st-media video { animation: none; }
-  .st-bar i.now b { animation: none; transform: scaleX(1); }
+  .st-bar i.cur b { animation: none; transform: scaleX(1); }
 }
 
 /* tools with a real output: media on top, plays on hover; the rest keep an icon tile the same size */
@@ -607,7 +601,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 .st.agent { background: hsl(var(--n900)); }
 .st.agent .st-copy { width: min(540px, 44%); }
 .st-proof.st-mm { top: 20px; right: 20px; bottom: 84px; left: 50%; width: auto; display: block; }
-@media (max-width: 760px) { .st-proof.st-mm { top: 16px; left: 8px; right: 8px; bottom: auto; height: 300px; } .st.agent .st-copy { width: auto; } }
+@media (max-width: 760px) { .st-proof.st-mm { top: 14px; left: 8px; right: 8px; bottom: auto; height: 250px; } .st.agent .st-copy { width: auto; } }
 
 /* ---------- agents banner (dark, Spacelab-style) ---------- */
 .agb { min-height: 600px; }
@@ -629,8 +623,8 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 @media (max-width: 760px) { .agb .build-art { min-height: 600px; } }
 
 /* ---------- closing card, now its own section above the footer ---------- */
-/* the closing banner is gone: the last section keeps the breathing room above the footer hem */
-.sect:has(+ .sfoot) { padding-bottom: 96px; }
+.endsec { padding-top: 96px; padding-bottom: 96px; }
+.endsec .endcard { background: hsl(var(--card)); }
 
 /* ---------- footer: matched to dev.sloosh.ai ---------- */
 .sfoot { position: relative; }
@@ -663,3 +657,28 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
   .sf-legal { grid-template-columns: 1fr; justify-items: center; text-align: center; padding-bottom: 88px; }
   .sf-soc { margin-left: 0; } .sf-law { justify-content: center; }
 }
+
+/* ---------- full-bleed banners: the motion plays across the card like a video, the copy sits over it on the left ---------- */
+.build.full { position: relative; display: flex; align-items: center; min-height: 560px; isolation: isolate; }
+.build.full .build-art { position: absolute; inset: 0; z-index: 0; padding: 0; min-height: 0; }
+.build.full .build-art .mm { position: absolute; inset: 0; }
+.build.full::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, hsl(var(--card)) 0%, hsl(var(--card)) 32%, hsl(var(--card) / 0.8) 40%, hsl(var(--card) / 0) 50%); }
+.build.full .build-copy { position: relative; z-index: 2; width: min(540px, 44%); min-height: 0; }
+.agb.full { min-height: 600px; }
+.ma.anch-r .mm-in { right: 72px; }
+.slab.anch-r .mm-in { right: 8px; }
+@media (max-width: 1100px) {
+  .build.full .build-copy { width: min(480px, 50%); }
+  .build.full::before { background: linear-gradient(90deg, hsl(var(--card)) 0%, hsl(var(--card)) 40%, hsl(var(--card) / 0) 66%); }
+}
+@media (max-width: 760px) {
+  .build.full { display: flex; flex-direction: column; align-items: stretch; min-height: 0; }
+  .build.full::before { display: none; }
+  .build.full .build-copy { width: auto; min-height: 0; }
+  .build.full .build-art { position: relative; inset: auto; height: 300px; }
+  .agb.full .build-art { height: 600px; }
+}
+/* the client tiles in the agents copy live outside the motion stage */
+.agb-cl .mk { display: block; background: currentColor; -webkit-mask: var(--mk) center / contain no-repeat; mask: var(--mk) center / contain no-repeat; }
+.agb-cl .mm-tile.cursor { box-shadow: 0 0 0 1px hsl(0 0% 100% / 0.18) inset; }

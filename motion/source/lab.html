@@ -1,0 +1,47 @@
+<!-- A Spacelab canvas playing like a video behind the banner copy: real node styles (green inputs with T/I ports,
+     blue Image Model, purple Video, googly-eye empty state), the canvas chrome, two collaborators.
+     ~12s loop rendered by mcp-motion.js (spec "lab"); the focus sits on the right, clear of the copy -->
+<div class="mm slab anch-r" data-mm="lab" aria-hidden="true">
+  <div class="mm-in">
+    <div class="L" data-k="cam" style="width:1200px;height:560px;transform-origin:860px 300px">
+      <svg class="sl-dots" viewBox="0 0 1600 900" style="left:-200px;top:-170px"><defs><pattern id="slDot" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.25" fill="currentColor"/></pattern></defs><rect width="1600" height="900" fill="url(#slDot)"/></svg>
+      <svg class="sl-wires" viewBox="0 0 1200 560">
+        <path class="sw g" d="M707 168 C 742 168, 724 222, 756 222"/>
+        <path class="sw g" d="M707 382 C 742 382, 724 282, 756 282"/>
+        <path class="sw b" d="M966 252 C 994 252, 978 330, 1002 330"/>
+        <path class="sp g" data-k="w1" pathLength="1" d="M707 168 C 742 168, 724 222, 756 222"/>
+        <path class="sp g" data-k="w2" pathLength="1" d="M707 382 C 742 382, 724 282, 756 282"/>
+        <path class="sp b" data-k="w3" pathLength="1" d="M966 252 C 994 252, 978 330, 1002 330"/>
+      </svg>
+
+      <div class="L C sn g" data-k="n1" style="width:210px;height:118px">
+        <span class="sl-tag g"><b>T</b>Prompt</span>
+        <p class="sn-tx" data-k="ptype" data-text="Turn this selfie into a studio portrait, then a 5s video of her."></p>
+        <i class="pt r g" style="top:50%">T</i>
+      </div>
+      <div class="L C sn g img" data-k="n2" style="width:210px;height:150px">
+        <span class="sl-tag g">[[icon16 Image02Icon]]Image</span>
+        <div class="sn-media"><img src="[[m:story/lab/selfie.webp]]" alt=""></div>
+        <i class="pt r g" style="top:50%">I</i>
+      </div>
+      <div class="L C sn b" data-k="n3" style="width:210px;height:262px">
+        <span class="sl-tag b">[[icon16 Image02Icon]]Image Model<em>Nano Banana Pro</em></span>
+        <div class="sn-media"><img data-k="r1" src="[[m:story/lab/portrait.webp]]" alt=""><span class="eyes" data-k="e1"><i><b></b></i><i><b></b></i></span><span class="sn-run" data-k="run1"><i></i>Running</span></div>
+        <i class="pt l g" style="top:38.5%">T</i><i class="pt l g" style="top:61.5%">I</i><i class="pt r b" style="top:50%">I</i>
+      </div>
+      <div class="L C sn p" data-k="n4" style="width:180px;height:232px">
+        <span class="sl-tag p">[[icon16 Video01Icon]]Video<em>Seedance 2.5</em></span>
+        <div class="sn-media"><img class="kb" data-k="r2" src="[[m:story/lab/portrait.webp]]" alt=""><span class="eyes" data-k="e2"><i><b></b></i><i><b></b></i></span><span class="sn-run" data-k="run2"><i></i>Running</span><span class="vbar" data-k="vbw"><b data-k="vb"></b></span></div>
+        <i class="pt l b" style="top:50%">I</i>
+      </div>
+    </div>
+
+    <!-- canvas chrome, fixed while the canvas drifts -->
+    <div class="L C sl-bar" data-k="bar" style="left:0;top:0"><span class="sb-i">[[icon16 Clock01Icon]]</span><span class="sb-i">[[icon16 Share08Icon]]</span><span class="sb-pub" data-k="pub"><span class="a">[[icon16 GridViewIcon]]Publish</span><span class="b">[[icon16 Tick02Icon]]Published</span></span></div>
+    <div class="L C sl-dock" data-k="dock"><span>[[icon16 PlusSignIcon]]</span><span class="on">[[icon16 MouseLeftClick01Icon]]</span><span>[[icon16 ArrowExpandIcon]]</span><span>[[icon16 RepeatIcon]]</span></div>
+
+    <div class="L sl-cur c1" data-k="cm"><svg viewBox="0 0 24 24"><path d="M4 3l16 7.5-7 1.8L9.2 20z"/></svg><span>Maya</span></div>
+    <div class="L sl-cur c2" data-k="ca"><svg viewBox="0 0 24 24"><path d="M4 3l16 7.5-7 1.8L9.2 20z"/></svg><span>Arjun</span><em data-k="cmt">Love it. Publish it?</em></div>
+    <span class="L C sl-click" data-k="clk"></span>
+  </div>
+</div>
