@@ -55,9 +55,9 @@
       });
       var dur = +cards[i].getAttribute("data-dur") || 7000;
       root.style.setProperty("--dur", dur + "ms");
-      bars.forEach(function (bar, k) { bar.classList.toggle("done", k < i); bar.classList.remove("cur"); tabs[k].setAttribute("aria-current", k === i ? "true" : "false"); });
+      bars.forEach(function (bar, k) { bar.classList.toggle("done", k < i); bar.classList.remove("now"); tabs[k].setAttribute("aria-current", k === i ? "true" : "false"); });
       void bars[i].offsetWidth;
-      bars[i].classList.add("cur");
+      bars[i].classList.add("now");
       remain = dur;
       startClock();
       if (live) live.textContent = "Story " + cards[i].getAttribute("aria-label");
@@ -141,6 +141,7 @@
         if (x.hasAttribute("aria-pressed")) x.setAttribute("aria-pressed", on ? "true" : "false");
       });
       if (focus) b.focus();
+      slide();
       if (name === "agent") {
         sec.querySelectorAll("[data-for]").forEach(function (el) { el.hidden = el.getAttribute("data-for") !== t; });
         var g = sec.querySelector(".ag-g:not([hidden])");
@@ -154,6 +155,22 @@
       });
     }
     btns.forEach(function (b) { b.tabIndex = b.getAttribute("aria-selected") === "true" ? 0 : -1; });
+    /* TextSegmentedSwitch: one shape slides under the picked segment */
+    var ind = null;
+    function slide() {
+      if (!ind) return;
+      var b = list.querySelector("[aria-selected=\"true\"]"); if (!b) return;
+      ind.style.width = b.offsetWidth + "px";
+      ind.style.transform = "translateX(" + b.offsetLeft + "px)";
+    }
+    if (list.classList.contains("tabs")) {
+      ind = doc.createElement("span"); ind.className = "seg-ind"; ind.setAttribute("aria-hidden", "true");
+      list.insertBefore(ind, list.firstChild);
+      ind.style.transition = "none"; slide(); void ind.offsetWidth; ind.style.transition = "";
+      list.classList.add("seg-ready");
+      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(slide);
+      window.addEventListener("resize", slide);
+    }
     list.addEventListener("click", function (e) { var b = e.target.closest("[data-tab]"); if (b) pick(b); });
     list.addEventListener("keydown", function (e) {
       var k = btns.indexOf(doc.activeElement); if (k < 0) return;
