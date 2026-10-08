@@ -948,7 +948,7 @@ html[data-theme="light"] .agents { background: hsl(var(--n100)); }
 /* critters that speak the handwritten notes: they stay out, they don't peek in and out */
 .bn-ag .agb-addr { position: relative; }
 .bn-ag .pk.ag-dog { left: auto; right: 28px; top: auto; bottom: calc(100% - 4px); z-index: 1; }
-.ma .pk.ag-cat { left: 18px; top: 84px; z-index: 3; }
+.ma .pk.ag-cat { display: block; left: 18px; top: 84px; z-index: 3; } /* shown whenever its note is: hidden only in the phone motion */
 .ma.is-m .pk.ag-cat { display: none; }
 .bn-ag .ma .crit { display: none; }
 .ag-guide .ic16 { width: 16px; height: 16px; }
