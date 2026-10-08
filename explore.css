@@ -1611,9 +1611,10 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
 }
 
 /* two drawn arrows from the prints into the box: drag one in. Only where the prints lie around the box */
-.dr-hint { position: absolute; top: 132px; z-index: 1; display: none; width: 104px; height: 61px; pointer-events: none; transition: opacity 240ms ease; }
-.dr-hint-l { right: calc(100% + 20px); }
-.dr-hint-r { left: calc(100% + 20px); }
+.dr-hint { position: absolute; z-index: 1; display: none; pointer-events: none; transition: opacity 240ms ease; }
+/* not mirrored on purpose: different heights, sizes, tilts and curves, roughly halfway between the prints and the box */
+.dr-hint-l { top: 184px; right: calc(100% + 52px); width: 108px; height: 63px; rotate: 9deg; }
+.dr-hint-r { top: 64px; left: calc(100% + 44px); width: 94px; height: 55px; rotate: -6deg; }
 .dr-v3.res .dr-hint { opacity: 0; }
 @container (min-width: 1200px) { .dr-v3 .dr-hint { display: block; } }
 /* phones and tablets: upload your own photo only. No sample prints (they only work as a drag-in around a desktop box) */
