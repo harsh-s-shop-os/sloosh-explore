@@ -160,6 +160,72 @@
     window.addEventListener("resize", function () { clearTimeout(masT); masT = setTimeout(masLayout, 150); });
   }
 
+  /* ---------- cast reel: eight faces from the open series tab ---------- */
+  var reel = doc.querySelector("[data-cast-reel]");
+  if (reel) {
+    var reelSec = reel.closest("section");
+    var track = reel.querySelector(".cast-track");
+    var reelRM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var reelShown = null;
+    var facesOf = function (t) {
+      var p = reelSec.querySelector('[data-panel="' + t + '"]');
+      var srcs = p ? [].slice.call(p.querySelectorAll(".mc img")).map(function (i) { return i.getAttribute("src"); }) : [];
+      if (!srcs.length) return [];
+      var out = [];
+      for (var k = 0; k < 8; k++) out.push(srcs[k % srcs.length]);
+      return out;
+    };
+    var face = function (src) {
+      var f = doc.createElement("span"); f.className = "cf";
+      var im = doc.createElement("img"); im.src = src; im.alt = ""; im.decoding = "async";
+      f.appendChild(im); return f;
+    };
+    /* two copies of the eight, so the drift loops without a seam */
+    var reelBuild = function (srcs) {
+      track.textContent = "";
+      srcs.concat(srcs).forEach(function (s) { track.appendChild(face(s)); });
+    };
+    /* the swap: each new face opens from the centre like an iris over the old one, left to right, with a small spring on the bubble */
+    var reelSwap = function (srcs) {
+      var bubbles = [].slice.call(track.children);
+      var left = reel.getBoundingClientRect().left;
+      var order = bubbles.map(function (b, i) { return { b: b, i: i, x: b.getBoundingClientRect().left - left }; })
+        .sort(function (a, c) { return a.x - c.x; });
+      order.forEach(function (o, rank) {
+        var b = o.b, src = srcs[o.i % 8], old = b.querySelector("img:last-child");
+        var im = doc.createElement("img"); im.src = src; im.alt = ""; im.decoding = "async";
+        b.appendChild(im);
+        if (reelRM || !im.animate) {
+          if (im.animate) im.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+          setTimeout(function () { [].slice.call(b.querySelectorAll("img")).slice(0, -1).forEach(function (x) { x.remove(); }); }, 220);
+          return;
+        }
+        var delay = Math.min(rank, 10) * 45;
+        im.animate([{ clipPath: "circle(0% at 50% 55%)", transform: "scale(1.25)" }, { clipPath: "circle(75% at 50% 55%)", transform: "scale(1)" }],
+          { duration: 420, delay: delay, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "backwards" });
+        if (old) old.animate([{ transform: "scale(1)", opacity: 1 }, { transform: "scale(0.82)", opacity: 0.4 }],
+          { duration: 420, delay: delay, easing: "cubic-bezier(0.23, 1, 0.32, 1)", fill: "forwards" });
+        b.animate([{ transform: "scale(1)" }, { transform: "scale(1.12)", offset: 0.4 }, { transform: "scale(1)" }],
+          { duration: 460, delay: delay, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" });
+        setTimeout(function () { [].slice.call(b.querySelectorAll("img")).slice(0, -1).forEach(function (x) { x.remove(); }); }, delay + 460);
+      });
+    };
+    var reelSync = function () {
+      var on = reelSec.querySelector('[data-tabs="series"] [aria-selected="true"]');
+      var t = on ? on.getAttribute("data-tab") : "0";
+      if (t === reelShown) return;
+      var srcs = facesOf(t); if (!srcs.length) return;
+      if (reelShown === null) reelBuild(srcs); else reelSwap(srcs);
+      reelShown = t;
+    };
+    reelSync();
+    var reelTabs = reelSec.querySelector('[data-tabs="series"]');
+    if (reelTabs) {
+      reelTabs.addEventListener("click", function () { setTimeout(reelSync, 0); });
+      reelTabs.addEventListener("keydown", function () { setTimeout(reelSync, 0); });
+    }
+  }
+
   /* ---------- tabs ---------- */
   doc.querySelectorAll("[data-tabs]").forEach(function (list) {
     var btns = [].slice.call(list.querySelectorAll("[data-tab]"));
