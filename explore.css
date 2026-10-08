@@ -170,7 +170,9 @@
 .mas-wrap { --clip: 90vh; position: relative; max-height: var(--clip); overflow: hidden; }
 @supports (height: 1svh) { .mas-wrap { --clip: 90svh; } }
 .mas { --cols: 5; columns: var(--cols); column-gap: 12px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--clip) * 0.62), transparent var(--clip)); mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--clip) * 0.62), transparent var(--clip)); }
+  /* eased fade into the dark: starts 40% down, gone 96px above the bottom, so the CTA sits on clear black */
+  --fade-a: calc(var(--clip) * 0.4); --fade-b: calc(var(--clip) - 96px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, rgb(0 0 0 / 1) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0), rgb(0 0 0 / 0.97) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.1), rgb(0 0 0 / 0.9) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.2), rgb(0 0 0 / 0.79) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.3), rgb(0 0 0 / 0.65) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.4), rgb(0 0 0 / 0.5) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.5), rgb(0 0 0 / 0.35) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.6), rgb(0 0 0 / 0.21) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.7), rgb(0 0 0 / 0.1) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.8), rgb(0 0 0 / 0.03) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.9), rgb(0 0 0 / 0) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 1)); mask-image: linear-gradient(to bottom, #000 0, rgb(0 0 0 / 1) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0), rgb(0 0 0 / 0.97) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.1), rgb(0 0 0 / 0.9) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.2), rgb(0 0 0 / 0.79) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.3), rgb(0 0 0 / 0.65) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.4), rgb(0 0 0 / 0.5) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.5), rgb(0 0 0 / 0.35) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.6), rgb(0 0 0 / 0.21) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.7), rgb(0 0 0 / 0.1) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.8), rgb(0 0 0 / 0.03) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 0.9), rgb(0 0 0 / 0) calc(var(--fade-a) + (var(--fade-b) - var(--fade-a)) * 1)); }
 .mas .mc { display: block; break-inside: avoid; margin-bottom: 12px; }
 .mas.js { display: flex; align-items: flex-start; gap: 12px; columns: auto; }
 .mas-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
@@ -1070,3 +1072,21 @@ button.pd-chip:active, .pd-ic:active { transform: scale(0.97); }
   .pd-big, .pd-big > *, .pd-box { transition: opacity 150ms ease; }
   .pd-big { clip-path: none; } .pd-big > * { transform: none; }
 }
+
+/* ---------- cast + series v3: six cards per tab in three columns, a wider Cast card with its face reel on top ---------- */
+@media (min-width: 1281px) { .ser { grid-template-columns: 360px minmax(0, 1fr); } }
+.ser-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cast-reel { order: -1; margin: 0 -24px 8px; padding: 0; }
+/* side by side, the card is as tall as the two rows: reel on top, copy under it, CTA on the bottom edge */
+@media (min-width: 1361px) { .cast .key { margin-top: auto; } }
+@media (min-width: 1281px) and (max-width: 1360px) { .shell-top .cast .key { margin-top: auto; } }
+@media (min-width: 761px) and (max-width: 1360px) {
+  .shell-side .cast { grid-template-areas: "reel reel" "top key" "h key" "p key"; }
+  .shell-side .cast-reel { margin: 0 -24px 16px; }
+}
+@media (max-width: 1280px) {
+  .cast { grid-template-areas: "reel reel" "top key" "h key" "p key"; }
+  .cast-reel { margin: 0 -24px 16px; }
+}
+@media (max-width: 1100px) { .ser-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .cast-reel { margin: 0 -24px 8px; } }
