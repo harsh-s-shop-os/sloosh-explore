@@ -10,7 +10,7 @@
   var snd = function (k) { if (window.slSound) window.slSound(k); };
 
   /* ---------- stories ---------- */
-  var root = doc.querySelector("[data-stories]");
+  var root = doc.querySelector("[data-stories]:not([hidden])");
   if (root) {
     var cards = [].slice.call(root.querySelectorAll(".st"));
     var tabs = [].slice.call(root.querySelectorAll(".st-tab"));
@@ -227,7 +227,7 @@
     doc.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen) { setOpen(false); } });
 
     /* hidden during the first fold */
-    var hero = doc.querySelector("#drop:not([hidden])") || doc.getElementById("stories");
+    var hero = doc.querySelector("[data-drop]:not([hidden])") || doc.querySelector("[data-stories]:not([hidden])");
     if (hero && "IntersectionObserver" in window) {
       new IntersectionObserver(function (es) {
         var e = es[0], off = e.isIntersecting && e.intersectionRatio > 0.4;
@@ -727,7 +727,7 @@
    The looks are drawn in the browser from the photo (stand-ins for Meta Muse). 3 free a day (sessionStorage).
    Signed in or out: ?signedin=1, or Save assets (it stands in for sign up). */
 (function () {
-  var doc = document, host = doc.querySelector("[data-drop]");
+  var doc = document, host = doc.querySelector("[data-drop]:not([hidden])");
   if (!host || host.hidden) return;
   var I = window.SlooshInk || null;
   var $ = function (s, r) { return (r || host).querySelector(s); }, $$ = function (s, r) { return [].slice.call((r || host).querySelectorAll(s)); };
