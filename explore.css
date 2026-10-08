@@ -1356,3 +1356,9 @@ svg[viewBox="0 0 24 24"] :is(path, circle, rect, line, polyline, polygon, ellips
   .dr-toast { bottom: calc(64px + 16px + env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) { .dr-col { animation: none; } .dr-scan { animation: none !important; } .dr-cv { animation: none; } }
+
+/* ---------- Gemini card: a white "Special offer" pill leads; the title steps down to plain 24px so the section title stays the only big one ---------- */
+.feat-offer { align-self: flex-start; display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 12px; background: hsl(var(--n0)); color: hsl(var(--n950)); font-size: 16px; font-weight: 600; line-height: 1; white-space: nowrap; }
+.feat-t { max-width: 440px; color: hsl(var(--on-media)); font-size: 24px; font-weight: 600; line-height: 1.2; text-wrap: balance; }
+.mdl2 .feat-copy .feat-foot { margin-top: 8px; }
+@media (max-width: 760px) { .feat-t { font-size: 20px; } }
